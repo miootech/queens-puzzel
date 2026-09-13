@@ -1,0 +1,262 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+}
+
+/* Force dark theme for the game */
+html {
+  color-scheme: dark;
+}
+
+html, body {
+  background: #000000;
+  color: #fafafa;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Strands Color Palette === */
+:root {
+  --strands-bg: #000000;
+  --strands-surface: #0d0d0f;
+  --strands-surface-2: #1a1a1e;
+  --strands-border: rgba(255, 255, 255, 0.08);
+  --strands-text: #f5f5f7;
+  --strands-text-dim: #86868b;
+  --strands-text-faint: #48484a;
+
+  /* Word colors (pastel Apple-style) */
+  --word-blue:    #5DADE2;
+  --word-purple:  #AF7AC5;
+  --word-teal:    #48C9B0;
+  --word-coral:   #F1948A;
+  --word-green:   #52BE80;
+  --word-orange:  #F5B041;
+  --word-pink:    #EC7063;
+  --word-gold:    #F4D03F;  /* spangram */
+  --word-error:   #ff453a;
+  --word-select:  #ffffff;
+}
+
+/* === Animations === */
+
+/* Subtle count-up pulse on timer */
+@keyframes timer-pulse {
+  0%   { transform: scale(1); opacity: 1; }
+  50%  { transform: scale(1.08); opacity: 0.85; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-timer-pulse {
+  animation: timer-pulse 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Shake on wrong word */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%  { transform: translateX(-5px); }
+  40%  { transform: translateX(5px); }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px); }
+}
+.animate-shake {
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Pop when a word is found */
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.22); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.animate-pop {
+  animation: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Fade-in-up for modals */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Backdrop fade */
+@keyframes backdrop-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-backdrop-fade {
+  animation: backdrop-fade 0.3s ease-out;
+}
+
+/* Hint pulse — soft golden glow for hint cells */
+@keyframes hint-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(244, 208, 63, 0.3),
+                inset 0 0 0 0 rgba(244, 208, 63, 0);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(244, 208, 63, 0.35),
+                inset 0 0 8px 1px rgba(244, 208, 63, 0.2);
+    transform: scale(1.04);
+  }
+}
+.animate-hint-pulse {
+  animation: hint-pulse 1.6s ease-in-out infinite;
+}
+
+/* Glow pulse for spangram cells */
+@keyframes spangram-glow {
+  0%, 100% {
+    box-shadow: 0 0 12px 0 rgba(244, 208, 63, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 24px 4px rgba(244, 208, 63, 0.55);
+  }
+}
+.animate-spangram-glow {
+  animation: spangram-glow 2.2s ease-in-out infinite;
+}
+
+/* Subtle background grain / mesh gradient — refined Emilia-style */
+.bg-mesh {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -20%, rgba(93, 173, 226, 0.08), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 110% 30%, rgba(244, 208, 63, 0.05), transparent 60%),
+    radial-gradient(ellipse 70% 50% at -10% 80%, rgba(175, 122, 197, 0.06), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 50% 110%, rgba(82, 190, 128, 0.04), transparent 60%),
+    #000000;
+}
+
+/* No text selection while dragging */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
