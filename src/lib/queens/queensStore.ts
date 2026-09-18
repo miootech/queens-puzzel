@@ -1,4 +1,4 @@
-// Queens puzzle state store — with difficulty + smart hint (exclusion cross-out).
+// Queens puzzle state store — with level counter + coins + shop.
 
 import { create } from 'zustand';
 import {
@@ -12,9 +12,21 @@ import {
   MAX_ERRORS,
 } from './types';
 import { generatePuzzle, validateBoard, isSolved } from './generator';
+import shopData from './shop-items.json';
 
-const STORAGE_KEY = 'queens_stats_v2';
+// Flatten shop items for lookup (themes + queens)
+const ALL_SHOP_ITEMS: { id: string; price: number }[] = [
+  ...shopData.themes.map(t => ({ id: t.id, price: t.price })),
+  ...shopData.queens.map(q => ({ id: q.id, price: q.price })),
+];
+
+const STORAGE_KEY = 'queens_stats_v3';
 const DIFF_KEY = 'queens_difficulty_v1';
+const LEVEL_KEY = 'queens_levels_v1';
+const COINS_KEY = 'queens_coins_v1';
+const OWNED_KEY = 'queens_owned_v1';
+const ACTIVE_THEME_KEY = 'queens_theme_v1';
+const ACTIVE_QUEEN_KEY = 'queens_queen_v1';
 
 function loadStats(): PersistentStats {
   if (typeof window === 'undefined') return { ...INITIAL_STATS };
@@ -29,8 +41,67 @@ function saveStats(stats: PersistentStats): void { if (typeof window !== 'undefi
 function loadDifficulty(): Difficulty { if (typeof window === 'undefined') return 'normal'; try { return (window.localStorage.getItem(DIFF_KEY) as Difficulty) ?? 'normal'; } catch { return 'normal'; } }
 function saveDifficulty(d: Difficulty): void { if (typeof window !== 'undefined') try { window.localStorage.setItem(DIFF_KEY, d); } catch { } }
 
+function loadLevels(): Record<Difficulty, number> {
+  if (typeof window === 'undefined') return { easy: 1, normal: 1, extreme: 1 };
+  try {
+    const raw = window.localStorage.getItem(LEVEL_KEY);
+    if (!raw) return { easy: 1, normal: 1, extreme: 1 };
+    const parsed = JSON.parse(raw) as Partial<Record<Difficulty, number>>;
+    return { easy: parsed.easy ?? 1, normal: parsed.normal ?? 1, extreme: parsed.extreme ?? 1 };
+  } catch { return { easy: 1, normal: 1, extreme: 1 }; }
+}
+function saveLevels(levels: Record<Difficulty, number>): void {
+  if (typeof window !== 'undefined') try { window.localStorage.setItem(LEVEL_KEY, JSON.stringify(levels)); } catch { }
+}
+
+// Coins
+function loadCoins(): number {
+  if (typeof window === 'undefined') return 0;
+  try { return parseInt(window.localStorage.getItem(COINS_KEY) ?? '0', 10) || 0; } catch { return 0; }
+}
+function saveCoins(coins: number): void {
+  if (typeof window !== 'undefined') try { window.localStorage.setItem(COINS_KEY, String(coins)); } catch { }
+}
+
+// Owned items
+function loadOwned(): string[] {
+  if (typeof window === 'undefined') return ['theme-pastel', 'queen-classic'];
+  try {
+    const raw = window.localStorage.getItem(OWNED_KEY);
+    if (!raw) return ['theme-pastel', 'queen-classic'];
+    return JSON.parse(raw) as string[];
+  } catch { return ['theme-pastel', 'queen-classic']; }
+}
+function saveOwned(owned: string[]): void {
+  if (typeof window !== 'undefined') try { window.localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); } catch { }
+}
+
+// Active theme + queen skin
+function loadActiveTheme(): string {
+  if (typeof window === 'undefined') return 'theme-pastel';
+  try { return window.localStorage.getItem(ACTIVE_THEME_KEY) ?? 'theme-pastel'; } catch { return 'theme-pastel'; }
+}
+function saveActiveTheme(id: string): void {
+  if (typeof window !== 'undefined') try { window.localStorage.setItem(ACTIVE_THEME_KEY, id); } catch { }
+}
+function loadActiveQueen(): string {
+  if (typeof window === 'undefined') return 'queen-classic';
+  try { return window.localStorage.getItem(ACTIVE_QUEEN_KEY) ?? 'queen-classic'; } catch { return 'queen-classic'; }
+}
+function saveActiveQueen(id: string): void {
+  if (typeof window !== 'undefined') try { window.localStorage.setItem(ACTIVE_QUEEN_KEY, id); } catch { }
+}
+
+// Calculate coins earned: random 42-69, minus penalty for errors and hints
+function calculateCoinsEarned(errors: number, hintsUsed: number): number {
+  const base = Math.floor(Math.random() * 28) + 42; // 42-69
+  const errorPenalty = errors * 5; // -5 per error
+  const hintPenalty = hintsUsed * 3; // -3 per hint
+  return Math.max(10, base - errorPenalty - hintPenalty); // minimum 10
+}
+
 function recordGame(stats: PersistentStats, result: QueensStats): PersistentStats {
-  const ns: PersistentStats = { ...stats, gamesPlayed: stats.gamesPlayed + 1, gamesWon: stats.gamesWon + (result.won ? 1 : 0), totalTime: stats.totalTime + result.timeSeconds, totalHints: stats.totalHints + result.hintsUsed, lastGame: result, history: [result, ...stats.history].slice(0, 50), bestTime: { ...stats.bestTime }, bestHints: { ...stats.bestHints } };
+  const ns: PersistentStats = { ...stats, gamesPlayed: stats.gamesPlayed + 1, gamesWon: stats.gamesWon + (result.won ? 1 : 0), totalTime: stats.totalTime + result.timeSeconds, totalHints: stats.totalHints + result.hintsUsed, totalCoins: stats.totalCoins + result.coinsEarned, lastGame: result, history: [result, ...stats.history].slice(0, 50), bestTime: { ...stats.bestTime }, bestHints: { ...stats.bestHints } };
   if (result.won) {
     const p = stats.bestTime[result.difficulty];
     if (p === null || result.timeSeconds < p) ns.bestTime[result.difficulty] = result.timeSeconds;
@@ -63,12 +134,21 @@ interface QueensState {
   history: Cell[][][]; errors: { row: number; col: number }[]; errorCount: number;
   timeSeconds: number; isRunning: boolean; isGameOver: boolean; hasWon: boolean;
   hintsUsed: number; lastResult: QueensStats | null; stats: PersistentStats;
-  showStats: boolean; showResult: boolean;
+  showStats: boolean; showResult: boolean; showShop: boolean;
+  levels: Record<Difficulty, number>;
+  coins: number;
+  ownedItems: string[];
+  activeTheme: string;
+  activeQueen: string;
+  lastCoinsEarned: number;
+
   startNewGame: (d?: Difficulty) => void; setDifficulty: (d: Difficulty) => void;
   setCellState: (r: number, c: number, state: 'empty' | 'x' | 'crown') => void;
   cycleCell: (r: number, c: number) => void; undo: () => void; reset: () => void;
   useHint: () => void; endGame: (won: boolean) => void; tick: () => void;
-  toggleStats: () => void; dismissResult: () => void;
+  toggleStats: () => void; toggleShop: () => void; dismissResult: () => void;
+  buyItem: (id: string) => void;
+  setTheme: (id: string) => void; setQueen: (id: string) => void;
 }
 
 function buildNewGame(d: Difficulty) {
@@ -77,7 +157,9 @@ function buildNewGame(d: Difficulty) {
 }
 
 export const useQueensStore = create<QueensState>((set, get) => ({
-  difficulty: 'normal', size: 8, cells: null, solution: null, history: [], errors: [], errorCount: 0, timeSeconds: 0, isRunning: false, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, stats: loadStats(), showStats: false, showResult: false,
+  difficulty: 'normal', size: 8, cells: null, solution: null, history: [], errors: [], errorCount: 0, timeSeconds: 0, isRunning: false, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, stats: loadStats(), showStats: false, showResult: false, showShop: false,
+  levels: loadLevels(), coins: loadCoins(), ownedItems: loadOwned(), activeTheme: loadActiveTheme(), activeQueen: loadActiveQueen(), lastCoinsEarned: 0,
+
   startNewGame: (d) => { const diff = d ?? get().difficulty; saveDifficulty(diff); set(buildNewGame(diff)); },
   setDifficulty: (d) => { saveDifficulty(d); set({ difficulty: d }); get().startNewGame(d); },
   setCellState: (r, c, newState) => {
@@ -90,8 +172,8 @@ export const useQueensStore = create<QueensState>((set, get) => ({
     let nec = state.errorCount; if (newState === 'crown' && prevState !== 'crown' && errSet.has(`${r},${c}`)) nec = state.errorCount + 1;
     const nh = [...state.history, ng.map(row => row.map(c2 => ({ ...c2 })))];
     set({ cells: ng, history: nh, errors: errs, errorCount: nec });
-    if (nec >= MAX_ERRORS) { setTimeout(() => get().endGame(false), 300); return; }
-    if (isSolved(ng, state.size)) setTimeout(() => get().endGame(true), 350);
+    if (nec >= MAX_ERRORS) { setTimeout(() => get().endGame(false), 200); return; }
+    if (isSolved(ng, state.size)) setTimeout(() => get().endGame(true), 200);
   },
   cycleCell: (r, c) => {
     const state = get(); if (!state.cells || state.isGameOver) return;
@@ -115,8 +197,9 @@ export const useQueensStore = create<QueensState>((set, get) => ({
   },
   reset: () => {
     const state = get(); if (!state.cells) return;
-    const cleared = state.cells.map(row => row.map(c => ({ ...c, state: 'empty' as const, hasError: false, hintExclude: false })));
-    set({ cells: cleared, history: [cleared.map(row => row.map(c => ({ ...c })))], errors: [], errorCount: 0 });
+    const cfg = DIFFICULTY_CONFIG[state.difficulty];
+    const puzzle = generatePuzzle(cfg.size);
+    set({ cells: puzzle.cells, solution: puzzle.queens, history: [puzzle.cells.map(row => row.map(c => ({ ...c })))], errors: [], errorCount: 0, timeSeconds: 0, isRunning: true, isGameOver: false, hasWon: false, hintsUsed: 0, showResult: false });
   },
   useHint: () => {
     const state = get(); if (!state.cells || state.isGameOver || state.hintsUsed >= MAX_HINTS) return;
@@ -128,11 +211,33 @@ export const useQueensStore = create<QueensState>((set, get) => ({
   },
   endGame: (won) => {
     const state = get(); if (state.isGameOver) return;
-    const result: QueensStats = { timeSeconds: state.timeSeconds, hintsUsed: state.hintsUsed, won, difficulty: state.difficulty, gridSize: state.size, date: new Date().toISOString() };
+    // Calculate coins earned (only on win)
+    const coinsEarned = won ? calculateCoinsEarned(state.errorCount, state.hintsUsed) : 0;
+    const result: QueensStats = { timeSeconds: state.timeSeconds, hintsUsed: state.hintsUsed, won, difficulty: state.difficulty, gridSize: state.size, coinsEarned, date: new Date().toISOString() };
     const ns = recordGame(state.stats, result);
-    set({ isRunning: false, isGameOver: true, hasWon: won, lastResult: result, stats: ns, showResult: true });
+    // Add coins to total
+    const newCoins = state.coins + coinsEarned;
+    saveCoins(newCoins);
+    // Increase level on win
+    let newLevels = { ...state.levels };
+    if (won) { newLevels[state.difficulty] = (newLevels[state.difficulty] ?? 1) + 1; saveLevels(newLevels); }
+    set({ isRunning: false, isGameOver: true, hasWon: won, lastResult: result, stats: ns, showResult: true, levels: newLevels, coins: newCoins, lastCoinsEarned: coinsEarned });
   },
   tick: () => { const state = get(); if (!state.isRunning) return; set({ timeSeconds: state.timeSeconds + 1 }); },
   toggleStats: () => set(s => ({ showStats: !s.showStats })),
+  toggleShop: () => set(s => ({ showShop: !s.showShop })),
   dismissResult: () => set({ showResult: false }),
+  buyItem: (id) => {
+    const state = get();
+    const item = ALL_SHOP_ITEMS.find(i => i.id === id);
+    if (!item) return;
+    if (state.ownedItems.includes(id)) return;
+    if (state.coins < item.price) return;
+    const newCoins = state.coins - item.price;
+    const newOwned = [...state.ownedItems, id];
+    saveCoins(newCoins); saveOwned(newOwned);
+    set({ coins: newCoins, ownedItems: newOwned });
+  },
+  setTheme: (id) => { saveActiveTheme(id); set({ activeTheme: id }); },
+  setQueen: (id) => { saveActiveQueen(id); set({ activeQueen: id }); },
 }));

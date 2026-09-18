@@ -1,4 +1,4 @@
-// Queens puzzle type definitions — standalone app.
+// Queens puzzle type definitions — standalone app with coins + shop.
 
 export type CellState = 'empty' | 'x' | 'crown';
 
@@ -26,6 +26,7 @@ export interface QueensStats {
   won: boolean;
   difficulty: Difficulty;
   gridSize: number;
+  coinsEarned: number;
   date: string;
 }
 
@@ -36,6 +37,7 @@ export interface PersistentStats {
   bestHints: Record<Difficulty, number | null>;
   totalTime: number;
   totalHints: number;
+  totalCoins: number;
   lastGame: QueensStats | null;
   history: QueensStats[];
 }
@@ -47,6 +49,7 @@ export const INITIAL_STATS: PersistentStats = {
   bestHints: { easy: null, normal: null, extreme: null },
   totalTime: 0,
   totalHints: 0,
+  totalCoins: 0,
   lastGame: null,
   history: [],
 };
@@ -59,3 +62,32 @@ export const DIFFICULTY_CONFIG = {
 
 export const MAX_HINTS = 3;
 export const MAX_ERRORS = 3;
+
+// ── Shop Items ──
+export interface ShopItem {
+  id: string;
+  name: string;
+  type: 'theme' | 'queen-skin';
+  price: number;
+  description: string;
+  // For themes: array of 12 colors (REGION_COLORS replacement)
+  colors?: string[];
+  // For queen skins: icon path or image URL (placeholder for PNG)
+  queenIcon?: string;
+}
+
+// Color themes
+export const SHOP_ITEMS: ShopItem[] = [
+  // Themes
+  { id: 'theme-pastel', name: 'Pastel', type: 'theme', price: 0, description: 'Standard Pastel-Farben', colors: ['#E8A598','#E8C887','#E8D88A','#A8D4A0','#9CCFC4','#9CBFD9','#B8A5C9','#D9A5A0','#B5B5B5','#D4B896','#A5B8D4','#C4A5B8'] },
+  { id: 'theme-ocean', name: 'Ocean', type: 'theme', price: 100, description: 'Kühle Blau-Töne', colors: ['#A8D8EA','#B0E0E6','#AFEEEE','#87CEEB','#87CEFA','#B0C4DE','#ADD8E6','#B0E0E6','#87CEEB','#87CEFA','#B0C4DE','#AFEEEE'] },
+  { id: 'theme-sunset', name: 'Sunset', type: 'theme', price: 150, description: 'Warme Orange-Rot-Töne', colors: ['#FFB6A3','#FFCBA4','#FFD8A8','#FFA07A','#FA8072','#E9967A','#F4A460','#FFA07A','#FA8072','#E9967A','#F4A460','#FFB6A3'] },
+  { id: 'theme-forest', name: 'Forest', type: 'theme', price: 200, description: 'Grüne Natur-Töne', colors: ['#C5E1A5','#AED581','#DCEDC8','#C5E1A5','#A5D6A7','#81C784','#66BB6A','#4CAF50','#81C784','#A5D6A7','#C5E1A5','#DCEDC8'] },
+  { id: 'theme-candy', name: 'Candy', type: 'theme', price: 250, description: 'Süße Bonbon-Farben', colors: ['#F8BBD0','#F48FB1','#FFCDD2','#FFAB91','#FFCC80','#FFF59D','#D7CCC8','#CE93D8','#B39DDB','#9FA8DA','#90CAF9','#81D4FA'] },
+  { id: 'theme-mono', name: 'Monochrome', type: 'theme', price: 300, description: 'Elegante Grau-Töne', colors: ['#CFD8DC','#B0BEC5','#90A4AE','#78909C','#607D8B','#546E7A','#455A64','#37474F','#CFD8DC','#B0BEC5','#90A4AE','#78909C'] },
+  // Queen Skins (PNGs werden später hinzugefügt — aktuell placeholder)
+  { id: 'queen-classic', name: 'Classic Crown', type: 'queen-skin', price: 0, description: 'Standard Krone', queenIcon: 'classic' },
+  { id: 'queen-gold', name: 'Gold Crown', type: 'queen-skin', price: 50, description: 'Goldene Krone', queenIcon: 'gold' },
+  { id: 'queen-diamond', name: 'Diamond Crown', type: 'queen-skin', price: 200, description: 'Diamant-Krone', queenIcon: 'diamond' },
+  { id: 'queen-star', name: 'Star Queen', type: 'queen-skin', price: 150, description: 'Sternen-Königin', queenIcon: 'star' },
+];

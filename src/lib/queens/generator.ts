@@ -134,7 +134,7 @@ export function generatePuzzle(size: number): GeneratedPuzzle {
     for (const q of queens) regionQueenCount[regionIds[q.row][q.col]]++;
     if (regionQueenCount.some(c => c !== 1)) continue;
     const cells: Cell[][] = Array.from({ length: size }, (_, r) =>
-      Array.from({ length: size }, (_, c) => ({ row: r, col: c, regionId: regionIds[r][c], state: 'idle' as const, hasError: false })))
+      Array.from({ length: size }, (_, c) => ({ row: r, col: c, regionId: regionIds[r][c], state: 'empty' as const, hasError: false })))
     ;
     return { size, cells, queens, regionIds };
   }
@@ -142,7 +142,7 @@ export function generatePuzzle(size: number): GeneratedPuzzle {
   const queens = placeQueens(size) ?? Array.from({ length: size }, (_, i) => ({ row: i, col: i }));
   const regionIds: number[][] = Array.from({ length: size }, (_, r) => Array.from({ length: size }, (_, c) => c));
   const cells: Cell[][] = Array.from({ length: size }, (_, r) =>
-    Array.from({ length: size }, (_, c) => ({ row: r, col: c, regionId: regionIds[r][c], state: 'idle' as const, hasError: false }))
+    Array.from({ length: size }, (_, c) => ({ row: r, col: c, regionId: regionIds[r][c], state: 'empty' as const, hasError: false }))
   );
   return { size, cells, queens, regionIds };
 }
