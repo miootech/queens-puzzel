@@ -148,6 +148,21 @@ function saveCoins(coins: number): void {
   if (typeof window !== 'undefined') try { window.localStorage.setItem(COINS_KEY, String(coins)); } catch { }
 }
 
+const STREAK_KEY = 'queens_streak_v1';
+
+function loadStreaks(): Record<Difficulty, number> {
+  if (typeof window === 'undefined') return { easy: 0, normal: 0, extreme: 0 };
+  try {
+    const raw = window.localStorage.getItem(STREAK_KEY);
+    if (!raw) return { easy: 0, normal: 0, extreme: 0 };
+    const parsed = JSON.parse(raw) as Partial<Record<Difficulty, number>>;
+    return { easy: parsed.easy ?? 0, normal: parsed.normal ?? 0, extreme: parsed.extreme ?? 0 };
+  } catch { return { easy: 0, normal: 0, extreme: 0 }; }
+}
+function saveStreaks(streaks: Record<Difficulty, number>): void {
+  if (typeof window !== 'undefined') try { window.localStorage.setItem(STREAK_KEY, JSON.stringify(streaks)); } catch { }
+}
+
 // Owned items
 function loadOwned(): string[] {
   if (typeof window === 'undefined') return ['theme-pastel', 'queen-classic'];
@@ -271,6 +286,8 @@ interface QueensState {
   gambleBet: number;
   gambleMultiplier: number;
   gambled: boolean;
+  streaks: Record<Difficulty, number>;
+  currentStreakBonus: number;
 
   startNewGame: (d?: Difficulty) => void; setDifficulty: (d: Difficulty) => void;
   setCellState: (r: number, c: number, state: 'empty' | 'x' | 'crown') => void;
@@ -296,6 +313,7 @@ export const useQueensStore = create<QueensState>((set, get) => ({
   difficulty: 'normal', size: 8, cells: null, solution: null, history: [], errors: [], errorCount: 0, timeSeconds: 0, isRunning: false, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, stats: loadStats(), showStats: false, showResult: false, showShop: false, showGamble: false,
   levels: loadLevels(), coins: loadCoins(), ownedItems: loadOwned(), activeTheme: loadActiveTheme(), activeQueen: loadActiveQueen(), lastPfandflaschenEarned: 0,
   pfandflaschenBreakdown: null, gambleBet: 0, gambleMultiplier: 0, gambled: false,
+  streaks: loadStreaks(), currentStreakBonus: 0,
 
   startNewGame: (d) => { const diff = d ?? get().difficulty; saveDifficulty(diff); set(buildNewGame(diff)); },
   setDifficulty: (d) => { saveDifficulty(d); set({ difficulty: d }); get().startNewGame(d); },
@@ -348,15 +366,36 @@ export const useQueensStore = create<QueensState>((set, get) => ({
   },
   endGame: (won) => {
     const state = get(); if (state.isGameOver) return;
-    // Check if new best time
     const prevBest = state.stats.bestTime[state.difficulty];
     const isNewBest = won && (prevBest === null || state.timeSeconds < prevBest);
-    // Calculate coins with new system
+
+    // Streak logic: 2+ consecutive wins in same difficulty = +2 per streak level
+    let newStreaks = { ...state.streaks };
+    let streakBonus = 0;
+    if (won) {
+      newStreaks[state.difficulty] = (newStreaks[state.difficulty] ?? 0) + 1;
+      // Streak bonus: streak level × 2 (streak 1 = first win = 0 bonus, streak 2 = +2, streak 3 = +4, etc)
+      const streakLevel = newStreaks[state.difficulty];
+      if (streakLevel >= 2) {
+        streakBonus = (streakLevel - 1) * 2;
+      }
+    } else {
+      newStreaks[state.difficulty] = 0; // reset streak on loss
+    }
+    saveStreaks(newStreaks);
+
+    // Calculate coins with streak bonus included
     const coinResult = won
       ? calculatePfandflaschenEarned(state.difficulty, state.errorCount, state.hintsUsed, state.timeSeconds, isNewBest)
       : { total: 0, breakdown: { base: 0, errorDeduction: 0, hintDeduction: 0, timerBonus: 0, bestTimeBonus: 0 } };
-    const pfandflaschenEarned = coinResult.total;
-    const result: QueensStats = { timeSeconds: state.timeSeconds, hintsUsed: state.hintsUsed, won, difficulty: state.difficulty, gridSize: state.size, pfandflaschenEarned, date: new Date().toISOString() };
+    const pfandflaschenEarned = coinResult.total + streakBonus;
+
+    // Store the actual earned amount (including streak bonus) in the result
+    const result: QueensStats = {
+      timeSeconds: state.timeSeconds, hintsUsed: state.hintsUsed, won,
+      difficulty: state.difficulty, gridSize: state.size,
+      pfandflaschenEarned, date: new Date().toISOString()
+    };
     const ns = recordGame(state.stats, result);
     const newCoins = state.coins + pfandflaschenEarned;
     saveCoins(newCoins);
@@ -368,6 +407,7 @@ export const useQueensStore = create<QueensState>((set, get) => ({
       levels: newLevels, coins: newCoins,
       lastPfandflaschenEarned: pfandflaschenEarned, pfandflaschenBreakdown: won ? coinResult.breakdown : null,
       gambleBet: pfandflaschenEarned, gambleMultiplier: 0, gambled: false, showGamble: false,
+      streaks: newStreaks, currentStreakBonus: streakBonus,
     });
   },
   tick: () => { const state = get(); if (!state.isRunning) return; set({ timeSeconds: state.timeSeconds + 1 }); },
@@ -378,16 +418,29 @@ export const useQueensStore = create<QueensState>((set, get) => ({
   applyGamble: (multiplier) => {
     const state = get();
     if (state.gambled) return;
-    // multiplier: 0 = lost everything, 1 = bet back, 2 = 2x, 3 = 3x, 5 = 5x
     const winnings = state.gambleBet * multiplier;
-    // Remove the original bet (it was already added to coins in endGame)
-    // and add the winnings instead
     const adjustedCoins = state.coins - state.gambleBet + winnings;
     saveCoins(adjustedCoins);
-    set({ gambleMultiplier: multiplier, gambled: true, coins: adjustedCoins, showGamble: false, showResult: true });
+    // Also update stats.totalPfandflaschen with the gamble difference
+    const diff = winnings - state.gambleBet;
+    const newStats = { ...state.stats, totalPfandflaschen: state.stats.totalPfandflaschen + diff };
+    saveStats(newStats);
+    // Update lastGame in history with the actual gambled amount
+    if (state.lastResult) {
+      const updatedResult = { ...state.lastResult, pfandflaschenEarned: winnings };
+      const newHistory = [...state.stats.history];
+      if (newHistory.length > 0 && newHistory[0] === state.lastResult) {
+        newHistory[0] = updatedResult;
+      }
+      newStats.history = newHistory;
+      newStats.lastGame = updatedResult;
+      saveStats(newStats);
+      set({ gambleMultiplier: multiplier, gambled: true, coins: adjustedCoins, showGamble: false, showResult: true, stats: newStats, lastResult: updatedResult, lastPfandflaschenEarned: winnings });
+    } else {
+      set({ gambleMultiplier: multiplier, gambled: true, coins: adjustedCoins, showGamble: false, showResult: true, stats: newStats });
+    }
   },
   skipGamble: () => {
-    // Keep the original coins, no gamble
     set({ showGamble: false, showResult: true, gambled: true });
   },
   buyItem: (id) => {

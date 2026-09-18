@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Crown, Clock, RotateCcw, Undo2, Lightbulb, BarChart3,
-  X, Trophy, Star, Heart, Instagram, Globe, ShoppingBag,
+  X, Trophy, Star, Heart, Instagram, Globe, ShoppingBag, Flame,
 } from 'lucide-react';
 import { useQueensStore } from '@/lib/queens/queensStore';
 import { MAX_HINTS, MAX_ERRORS, DIFFICULTY_CONFIG, Difficulty } from '@/lib/queens/types';
@@ -59,6 +59,7 @@ export default function QueensPage() {
   const canUndo = historyLen > 1;
   const difficulties: Difficulty[] = ['easy', 'normal', 'extreme'];
   const currentLevel = levels[difficulty] ?? 1;
+  const currentStreak = useQueensStore(s => s.streaks[difficulty] ?? 0);
 
   const handleNext = () => { dismissResult(); startNewGame(); };
 
@@ -80,13 +81,19 @@ export default function QueensPage() {
         </div>
       </motion.div>
 
-      {/* Level Pill */}
-      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03, duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="mt-4">
+      {/* Level Pill + Streak */}
+      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03, duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="mt-4 flex items-center gap-3">
         <motion.div animate={{ scale: currentLevel > 1 ? [1, 1.08, 1] : 1 }} transition={{ duration: 0.4, ease: 'easeInOut' }} className="flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[var(--word-gold)]/[0.12] via-[var(--word-gold)]/[0.08] to-[var(--word-gold)]/[0.12] px-6 py-2.5 ring-1 ring-[var(--word-gold)]/25" style={{ boxShadow: '0 4px 20px rgba(244, 208, 63, 0.1)' }}>
           <Star className="h-4 w-4 fill-[var(--word-gold)] text-[var(--word-gold)]" />
           <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-400">Level</span>
           <span className="font-mono text-[20px] font-bold tabular-nums text-[var(--word-gold)]" style={{ textShadow: '0 0 12px rgba(244, 208, 63, 0.3)' }}>{mounted ? currentLevel : 1}</span>
         </motion.div>
+        {mounted && currentStreak >= 2 && (
+          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-1.5 rounded-full bg-orange-500/[0.12] px-3 py-2.5 ring-1 ring-orange-500/25" style={{ boxShadow: '0 4px 16px rgba(249, 115, 22, 0.15)' }}>
+            <Flame className="h-4 w-4 fill-orange-400 text-orange-400" />
+            <span className="font-mono text-[16px] font-bold tabular-nums text-orange-400">{currentStreak}</span>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Difficulty pills */}
@@ -149,7 +156,7 @@ export default function QueensPage() {
                   <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-4 rounded-xl bg-amber-500/[0.06] px-4 py-3 ring-1 ring-amber-500/15">
                     <div className="flex items-center justify-center gap-2 pb-2">
                       <motion.div initial={{ rotate: -15, scale: 0 }} animate={{ rotate: 0, scale: 1 }} transition={{ delay: 0.5, type: 'spring', stiffness: 300, damping: 15 }}><BottleIcon className="h-5 w-5 text-amber-400" /></motion.div>
-                      <span className="font-mono text-[18px] font-bold tabular-nums text-amber-300">+{gambled ? lastPfandflaschenEarned * gambleMultiplier : lastPfandflaschenEarned}</span>
+                      <span className="font-mono text-[18px] font-bold tabular-nums text-amber-300">+{lastPfandflaschenEarned}</span>
                       <span className="text-[11px] text-amber-500/70">{gambled && gambleMultiplier > 1 ? `(${gambleMultiplier}x Gamble!)` : 'Pfandflaschen'}</span>
                     </div>
                     <div className="flex flex-col gap-1 text-[10px] text-neutral-500">
@@ -158,6 +165,7 @@ export default function QueensPage() {
                       {pfandflaschenBreakdown.hintDeduction > 0 && <div className="flex justify-between"><span>Hints (-20% × {lastResult.hintsUsed})</span><span className="font-mono text-red-400">-{pfandflaschenBreakdown.hintDeduction}</span></div>}
                       {pfandflaschenBreakdown.timerBonus > 0 && <div className="flex justify-between"><span>Timer Bonus (0 Hints!)</span><span className="font-mono text-emerald-400">+{pfandflaschenBreakdown.timerBonus}</span></div>}
                       {pfandflaschenBreakdown.bestTimeBonus > 0 && <div className="flex justify-between"><span>★ New Best Time!</span><span className="font-mono text-[var(--word-gold)]">+{pfandflaschenBreakdown.bestTimeBonus}</span></div>}
+                      {useQueensStore.getState().currentStreakBonus > 0 && <div className="flex justify-between"><span>🔥 Win Streak ×{useQueensStore.getState().streaks[difficulty] ?? 0}</span><span className="font-mono text-orange-400">+{useQueensStore.getState().currentStreakBonus}</span></div>}
                     </div>
                   </motion.div>
                 )}

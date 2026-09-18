@@ -207,10 +207,9 @@ export function ShopModal() {
                         <span className={cn('rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider', rarity.badge)}>{item.rarity}</span>
                       </div>
                       <div className="mt-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-amber-500/30 via-rose-500/20 to-purple-500/20 ring-1 ring-white/10" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        ) : (
-                          <Crown className={cn('h-8 w-8', isActive ? 'fill-[var(--word-gold)] text-[var(--word-gold)]' : 'fill-amber-300 text-amber-300')} />
+                        <Crown className={cn('h-8 w-8', isActive ? 'fill-[var(--word-gold)] text-[var(--word-gold)]' : 'fill-amber-300 text-amber-300')} />
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="absolute h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
                       </div>
                       <span className="mt-3 text-[14px] font-semibold tracking-tight text-neutral-50" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{item.name}</span>

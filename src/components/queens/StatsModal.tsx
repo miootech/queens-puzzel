@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import {
-  X, Trophy, Star, Crown, Clock, Target, Zap,
+  X, Trophy, Star, Crown, Clock, Target, Zap, Flame,
 } from 'lucide-react';
 import { BottleIcon } from "@/components/queens/BottleIcon";
 import { useQueensStore } from '@/lib/queens/queensStore';
@@ -20,6 +20,7 @@ const DIFFICULTY_COLORS: Record<Difficulty, string> = {
 export function StatsModal() {
   const stats = useQueensStore(s => s.stats);
   const levels = useQueensStore(s => s.levels);
+  const streaks = useQueensStore(s => s.streaks);
   const coins = useQueensStore(s => s.coins);
   const toggleStats = useQueensStore(s => s.toggleStats);
   const difficulties: Difficulty[] = ['easy', 'normal', 'extreme'];
@@ -147,6 +148,7 @@ export function StatsModal() {
               const cfg = DIFFICULTY_CONFIG[d];
               const best = stats.bestTime[d];
               const lvl = levels[d] ?? 1;
+              const streak = streaks[d] ?? 0;
               const color = DIFFICULTY_COLORS[d];
               const data = perDiff.find(p => p.difficulty === d)!;
               const winPct = data.total > 0 ? (data.wins / data.total) * 100 : 0;
@@ -167,9 +169,17 @@ export function StatsModal() {
                       <span className="text-[18px] font-bold text-neutral-50">{cfg.label}</span>
                       <span className="text-[12px] text-neutral-500">{cfg.size}×{cfg.size}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] uppercase tracking-wider text-neutral-400">Level</span>
-                      <span className="font-mono text-xl font-bold tabular-nums text-[var(--word-gold)]">{lvl}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] uppercase tracking-wider text-neutral-400">Lvl</span>
+                        <span className="font-mono text-xl font-bold tabular-nums text-[var(--word-gold)]">{lvl}</span>
+                      </div>
+                      {streak >= 2 && (
+                        <div className="flex items-center gap-1 rounded-full bg-orange-500/[0.12] px-2 py-1">
+                          <Flame className="h-3.5 w-3.5 fill-orange-400 text-orange-400" />
+                          <span className="font-mono text-[14px] font-bold tabular-nums text-orange-400">{streak}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
