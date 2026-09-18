@@ -59,31 +59,31 @@
       "icon": "crown"
     },
     {
-      "id": "queen-gold",
-      "name": "Gold Crown",
-      "price": 50,
-      "description": "Goldene Krone",
+      "id": "queen-unicorn",
+      "name": "Unicorn",
+      "price": 1000,
+      "description": "a Sigma Unicorn",
       "rarity": "common",
       "icon": "crown",
-      "image": "/queens/gold.png"
+      "image": "/queens/unicorn.png"
     },
     {
-      "id": "queen-star",
-      "name": "Star Queen",
-      "price": 150,
-      "description": "Sternen-Königin",
+      "id": "queen-diva_pablo",
+      "name": "Diva Pablo",
+      "price": 2000,
+      "description": "He might be Pablo but he is also a diva",
       "rarity": "rare",
       "icon": "crown",
-      "image": "/queens/star.png"
+      "image": "/queens/diva_pablo.png"
     },
     {
-      "id": "queen-diamond",
-      "name": "Diamond Crown",
-      "price": 200,
-      "description": "Diamant-Krone",
+      "id": "queen-nugget",
+      "name": "Geda Gedi Geda Ao",
+      "price": 3000,
+      "description": "a singing nugget?!",
       "rarity": "epic",
       "icon": "crown",
-      "image": "/queens/diamond.png"
+      "image": "/queens/gedagedigeda.png"
     }
   ]
 }
