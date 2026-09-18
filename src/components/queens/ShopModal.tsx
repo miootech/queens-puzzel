@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Crown, X, Coins, Lock, Check, Palette,
+  Crown, X, Lock, Check, Palette,
 } from 'lucide-react';
+import { BottleIcon } from "@/components/queens/BottleIcon";
 import { useQueensStore } from '@/lib/queens/queensStore';
 import { cn } from '@/lib/utils';
 
@@ -82,7 +83,7 @@ export function ShopModal() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 rounded-full bg-amber-500/[0.08] px-3 py-1.5 ring-1 ring-amber-500/20">
-                <Coins className="h-3.5 w-3.5 text-amber-400" />
+                <BottleIcon className="h-3.5 w-3.5 text-amber-400" />
                 <span className="font-mono text-[13px] font-bold tabular-nums text-amber-300">{coins}</span>
               </div>
               <button onClick={toggleShop} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.04] text-neutral-400 ring-1 ring-white/[0.06] hover:bg-white/[0.08] hover:text-white">
@@ -167,7 +168,7 @@ export function ShopModal() {
                           </motion.button>
                         ) : (
                           <motion.button onClick={() => buyItem(item.id)} disabled={!canAfford} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', canAfford ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600')}>
-                            {canAfford ? <><Coins className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
+                            {canAfford ? <><BottleIcon className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
                           </motion.button>
                         )}
                       </div>
@@ -221,7 +222,7 @@ export function ShopModal() {
                           </motion.button>
                         ) : (
                           <motion.button onClick={() => buyItem(item.id)} disabled={!canAfford} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', canAfford ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600')}>
-                            {canAfford ? <><Coins className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
+                            {canAfford ? <><BottleIcon className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
                           </motion.button>
                         )}
                       </div>

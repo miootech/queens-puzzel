@@ -26,7 +26,7 @@ export interface QueensStats {
   won: boolean;
   difficulty: Difficulty;
   gridSize: number;
-  coinsEarned: number;
+  pfandflaschenEarned: number;
   date: string;
 }
 
@@ -37,7 +37,7 @@ export interface PersistentStats {
   bestHints: Record<Difficulty, number | null>;
   totalTime: number;
   totalHints: number;
-  totalCoins: number;
+  totalPfandflaschen: number;
   lastGame: QueensStats | null;
   history: QueensStats[];
 }
@@ -49,7 +49,7 @@ export const INITIAL_STATS: PersistentStats = {
   bestHints: { easy: null, normal: null, extreme: null },
   totalTime: 0,
   totalHints: 0,
-  totalCoins: 0,
+  totalPfandflaschen: 0,
   lastGame: null,
   history: [],
 };

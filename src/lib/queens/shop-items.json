@@ -4,7 +4,7 @@
       "id": "theme-pastel",
       "name": "Pastel",
       "price": 0,
-      "description": "Standard Pastel-Farben",
+      "description": "Standard pastel colors",
       "rarity": "free",
       "colors": ["#E8A598","#E8C887","#E8D88A","#A8D4A0","#9CCFC4","#9CBFD9","#B8A5C9","#D9A5A0","#B5B5B5","#D4B896","#A5B8D4","#C4A5B8"]
     },
@@ -12,7 +12,7 @@
       "id": "theme-ocean",
       "name": "Ocean",
       "price": 100,
-      "description": "Kühle Blau-Töne",
+      "description": "Cool blue tones",
       "rarity": "rare",
       "colors": ["#A8D8EA","#B0E0E6","#AFEEEE","#87CEEB","#87CEFA","#B0C4DE","#ADD8E6","#B0E0E6","#87CEEB","#87CEFA","#B0C4DE","#AFEEEE"]
     },
@@ -20,7 +20,7 @@
       "id": "theme-sunset",
       "name": "Sunset",
       "price": 150,
-      "description": "Warme Orange-Rot-Töne",
+      "description": "Warm orange and red tones",
       "rarity": "rare",
       "colors": ["#FFB6A3","#FFCBA4","#FFD8A8","#FFA07A","#FA8072","#E9967A","#F4A460","#FFA07A","#FA8072","#E9967A","#F4A460","#FFB6A3"]
     },
@@ -28,7 +28,7 @@
       "id": "theme-forest",
       "name": "Forest",
       "price": 200,
-      "description": "Grüne Natur-Töne",
+      "description": "Green nature tones",
       "rarity": "epic",
       "colors": ["#C5E1A5","#AED581","#DCEDC8","#C5E1A5","#A5D6A7","#81C784","#66BB6A","#4CAF50","#81C784","#A5D6A7","#C5E1A5","#DCEDC8"]
     },
@@ -36,7 +36,7 @@
       "id": "theme-candy",
       "name": "Candy",
       "price": 250,
-      "description": "Süße Bonbon-Farben",
+      "description": "Sweet candy colors",
       "rarity": "epic",
       "colors": ["#F8BBD0","#F48FB1","#FFCDD2","#FFAB91","#FFCC80","#FFF59D","#D7CCC8","#CE93D8","#B39DDB","#9FA8DA","#90CAF9","#81D4FA"]
     },
@@ -44,7 +44,7 @@
       "id": "theme-mono",
       "name": "Monochrome",
       "price": 300,
-      "description": "Elegante Grau-Töne",
+      "description": "Elegant gray tones",
       "rarity": "legendary",
       "colors": ["#CFD8DC","#B0BEC5","#90A4AE","#78909C","#607D8B","#546E7A","#455A64","#37474F","#CFD8DC","#B0BEC5","#90A4AE","#78909C"]
     }
@@ -54,7 +54,7 @@
       "id": "queen-classic",
       "name": "Classic Crown",
       "price": 0,
-      "description": "Standard Krone",
+      "description": "Standard crown",
       "rarity": "free",
       "icon": "crown"
     },
@@ -62,7 +62,7 @@
       "id": "queen-unicorn",
       "name": "Unicorn",
       "price": 1000,
-      "description": "a Sigma Unicorn",
+      "description": "a sigma Unicorn",
       "rarity": "common",
       "icon": "crown",
       "image": "/queens/unicorn.png"
@@ -71,16 +71,16 @@
       "id": "queen-diva_pablo",
       "name": "Diva Pablo",
       "price": 2000,
-      "description": "He might be Pablo but he is also a diva",
+      "description": "He might be Pablo but he also is a Diva",
       "rarity": "rare",
       "icon": "crown",
       "image": "/queens/diva_pablo.png"
     },
     {
-      "id": "queen-nugget",
+      "id": "queen-gedagedigeda",
       "name": "Geda Gedi Geda Ao",
       "price": 3000,
-      "description": "a singing nugget?!",
+      "description": "a nugget that can sing ig?",
       "rarity": "epic",
       "icon": "crown",
       "image": "/queens/gedagedigeda.png"

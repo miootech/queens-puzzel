@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Bottle neck -->
+  <path d="M9 2h6v4l1.5 2.5A8 8 0 0 1 18 13v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7a8 8 0 0 1 1.5-4.5L9 6V2z" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+  <!-- Bottle cap -->
+  <rect x="8" y="1" width="8" height="3" rx="1" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+  <!-- Label -->
+  <rect x="7" y="13" width="10" height="5" rx="1" fill="#ffffff" opacity="0.9"/>
+  <!-- Recycling symbol -->
+  <text x="12" y="17" text-anchor="middle" font-size="4" fill="#16a34a" font-weight="bold">♻</text>
+</svg>

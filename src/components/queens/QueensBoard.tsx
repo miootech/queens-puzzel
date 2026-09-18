@@ -181,10 +181,10 @@ export function QueensBoard() {
       <AnimatePresence>
         {selectedCell && (
           <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mt-2 flex items-center justify-center gap-3 text-[10px] text-neutral-500">
-            <span className="flex items-center gap-1"><kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-neutral-300">1</kbd>Leer</span>
+            <span className="flex items-center gap-1"><kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-neutral-300">1</kbd>Empty</span>
             <span className="flex items-center gap-1"><kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-neutral-300">2</kbd>X</span>
-            <span className="flex items-center gap-1"><kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-neutral-300">3</kbd>Krone</span>
-            <span className="text-neutral-600">· Click: X → Krone · Drag: X</span>
+            <span className="flex items-center gap-1"><kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-neutral-300">3</kbd>Crown</span>
+            <span className="text-neutral-600">· Click: X → Crown · Drag: X</span>
           </motion.div>
         )}
       </AnimatePresence>
