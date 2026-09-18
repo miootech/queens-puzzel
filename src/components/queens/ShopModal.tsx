@@ -31,16 +31,139 @@ import shopData from '@/lib/queens/shop-items.json';
 const SHOP: ShopData = shopData as ShopData;
 
 // ─── Rarity System ───
-const RARITY_CONFIG: Record<string, { ring: string; badge: string }> = {
-  free:      { ring: 'ring-white/10',            badge: 'text-neutral-400 bg-white/[0.06]' },
-  common:    { ring: 'ring-sky-400/30',          badge: 'text-sky-300 bg-sky-400/10' },
-  rare:      { ring: 'ring-purple-400/30',       badge: 'text-purple-300 bg-purple-400/10' },
-  epic:      { ring: 'ring-amber-400/30',        badge: 'text-amber-300 bg-amber-400/10' },
-  legendary: { ring: 'ring-rose-400/30',         badge: 'text-rose-300 bg-rose-400/10' },
+const RARITY_CONFIG: Record<string, { ring: string; badge: string; glow: string }> = {
+  free:      { ring: 'ring-white/10',            badge: 'text-neutral-400 bg-white/[0.06]',                glow: 'rgba(255,255,255,0.04)' },
+  common:    { ring: 'ring-sky-400/30',          badge: 'text-sky-300 bg-sky-400/10',                       glow: 'rgba(56,189,248,0.10)' },
+  rare:      { ring: 'ring-purple-400/30',       badge: 'text-purple-300 bg-purple-400/10',                  glow: 'rgba(192,132,252,0.10)' },
+  epic:      { ring: 'ring-amber-400/30',        badge: 'text-amber-300 bg-amber-400/10',                    glow: 'rgba(251,191,36,0.10)' },
+  legendary: { ring: 'ring-rose-400/30',         badge: 'text-rose-300 bg-rose-400/10',                      glow: 'rgba(244,63,94,0.10)' },
 };
 
 function getRarity(r: string) {
   return RARITY_CONFIG[r] ?? RARITY_CONFIG.free;
+}
+
+// ─── Queen Icon (Bild mit Crown-Fallback) ───
+function QueenIcon({ image, name, isActive }: { image?: string; name: string; isActive: boolean }) {
+  const [imgError, setImgError] = useState(false);
+  if (!image || imgError) {
+    return (
+      <Crown
+        className={cn('h-10 w-10', isActive ? 'fill-[var(--word-gold)] text-[var(--word-gold)]' : 'fill-amber-300 text-amber-300')}
+        strokeWidth={1.4}
+      />
+    );
+  }
+  return (
+    <img
+      src={image}
+      alt={name}
+      className="h-full w-full object-cover"
+      onError={() => setImgError(true)}
+    />
+  );
+}
+
+// ─── Uniform Shop Card (für Themes & Queens) ───
+function ShopCard({
+  isActive,
+  rarity,
+  badgeLabel,
+  iconSlot, // ReactNode fürs Icon (rounded-square container wird hier geliefert)
+  name,
+  description,
+  owned,
+  canAfford,
+  price,
+  onSelect,
+  onBuy,
+  index,
+}: {
+  isActive: boolean;
+  rarity: ReturnType<typeof getRarity>;
+  badgeLabel: string;
+  iconSlot: React.ReactNode;
+  name: string;
+  description: string;
+  owned: boolean;
+  canAfford: boolean;
+  price: number;
+  onSelect: () => void;
+  onBuy: () => void;
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.4 }}
+      whileHover={{ scale: 1.03, y: -2 }}
+      className={cn(
+        'relative flex flex-col items-center overflow-hidden rounded-2xl p-4 ring-2 transition-all',
+        isActive ? 'bg-[var(--word-gold)]/[0.1] ring-[var(--word-gold)]/40' : `bg-white/[0.03] ${rarity.ring} hover:ring-white/20`
+      )}
+      style={{ boxShadow: isActive ? '0 4px 20px rgba(244, 208, 63, 0.15)' : '0 2px 12px rgba(0,0,0,0.3)' }}
+    >
+      {/* Rarity badge top-right */}
+      <div className="absolute right-2 top-2 z-10">
+        <span className={cn('rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider', rarity.badge)}>{badgeLabel}</span>
+      </div>
+
+      {/* ── Rounded-square icon (zentriert) ── */}
+      <div
+        className="relative mt-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white/[0.04] ring-1 ring-white/10"
+        style={{ boxShadow: `0 4px 16px ${rarity.glow}, inset 0 1px 0 rgba(255,255,255,0.04)` }}
+      >
+        {iconSlot}
+      </div>
+
+      {/* ── Name pill (hervorgehoben) ── */}
+      <div className="mt-3 flex w-full justify-center">
+        <span
+          className={cn(
+            'inline-flex items-center justify-center rounded-full px-3 py-1 text-[12px] font-semibold tracking-tight',
+            isActive
+              ? 'bg-[var(--word-gold)]/20 text-[var(--word-gold)] ring-1 ring-[var(--word-gold)]/30'
+              : 'bg-white/[0.06] text-neutral-100 ring-1 ring-white/[0.08]'
+          )}
+          style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+        >
+          {name}
+        </span>
+      </div>
+
+      {/* ── Description ── */}
+      <p className="mt-2 min-h-[28px] text-center text-[10px] leading-tight text-neutral-500">{description}</p>
+
+      {/* ── Price / Select button ── */}
+      <div className="mt-3 w-full">
+        {owned ? (
+          <motion.button
+            onClick={onSelect}
+            whileTap={{ scale: 0.95 }}
+            className={cn(
+              'flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors',
+              isActive ? 'bg-[var(--word-gold)]/20 text-[var(--word-gold)]' : 'bg-white/[0.1] text-neutral-200 hover:bg-white/[0.15]'
+            )}
+          >
+            {isActive ? <><Check className="h-3.5 w-3.5" />Aktiv</> : 'Auswählen'}
+          </motion.button>
+        ) : (
+          <motion.button
+            onClick={onBuy}
+            disabled={!canAfford}
+            whileTap={{ scale: 0.95 }}
+            className={cn(
+              'flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors',
+              canAfford ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600'
+            )}
+          >
+            {canAfford ? <><BottleIcon className="h-3.5 w-3.5" />{price}</> : <><Lock className="h-3.5 w-3.5" />{price}</>}
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
+  );
 }
 
 // ─── Shop Modal Komponente ───
@@ -191,41 +314,21 @@ export function ShopModal() {
                   const canAfford = coins >= item.price;
                   const rarity = getRarity(item.rarity);
                   return (
-                    <motion.div
+                    <ShopCard
                       key={item.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05, duration: 0.4 }}
-                      whileHover={{ scale: 1.03, y: -2 }}
-                      className={cn(
-                        'relative flex flex-col items-center overflow-hidden rounded-2xl p-4 ring-2 transition-all',
-                        isActive ? 'bg-[var(--word-gold)]/[0.1] ring-[var(--word-gold)]/40' : `bg-white/[0.03] ${rarity.ring} hover:ring-white/20`
-                      )}
-                      style={{ boxShadow: isActive ? '0 4px 20px rgba(244, 208, 63, 0.15)' : '0 2px 12px rgba(0,0,0,0.3)' }}
-                    >
-                      <div className="absolute right-2 top-2">
-                        <span className={cn('rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider', rarity.badge)}>{item.rarity}</span>
-                      </div>
-                      <div className="mt-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-amber-500/30 via-rose-500/20 to-purple-500/20 ring-1 ring-white/10" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
-                        <Crown className={cn('h-8 w-8', isActive ? 'fill-[var(--word-gold)] text-[var(--word-gold)]' : 'fill-amber-300 text-amber-300')} />
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="absolute h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        )}
-                      </div>
-                      <span className="mt-3 text-[14px] font-semibold tracking-tight text-neutral-50" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{item.name}</span>
-                      <p className="mt-0.5 text-[10px] text-neutral-500">{item.description}</p>
-                      <div className="mt-3 w-full">
-                        {owned ? (
-                          <motion.button onClick={() => setQueen(item.id)} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', isActive ? 'bg-[var(--word-gold)]/20 text-[var(--word-gold)]' : 'bg-white/[0.1] text-neutral-200 hover:bg-white/[0.15]')}>
-                            {isActive ? <><Check className="h-3.5 w-3.5" />Aktiv</> : 'Auswählen'}
-                          </motion.button>
-                        ) : (
-                          <motion.button onClick={() => buyItem(item.id)} disabled={!canAfford} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', canAfford ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600')}>
-                            {canAfford ? <><BottleIcon className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
-                          </motion.button>
-                        )}
-                      </div>
-                    </motion.div>
+                      index={idx}
+                      isActive={isActive}
+                      rarity={rarity}
+                      badgeLabel={item.rarity}
+                      name={item.name}
+                      description={item.description}
+                      owned={owned}
+                      canAfford={canAfford}
+                      price={item.price}
+                      onSelect={() => setQueen(item.id)}
+                      onBuy={() => buyItem(item.id)}
+                      iconSlot={<QueenIcon image={item.image} name={item.name} isActive={isActive} />}
+                    />
                   );
                 })}
               </motion.div>

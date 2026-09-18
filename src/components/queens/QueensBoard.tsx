@@ -5,7 +5,40 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, X } from 'lucide-react';
 import { useQueensStore } from '@/lib/queens/queensStore';
 import { REGION_COLORS, SHOP_ITEMS } from '@/lib/queens/types';
+import shopData from '@/lib/queens/shop-items.json';
 import { cn } from '@/lib/utils';
+
+// Lookup für Queen-Skins aus shop-items.json (image path)
+interface QueenItem { id: string; image?: string }
+const QUEEN_LOOKUP: Record<string, QueenItem> = (shopData.queens as QueenItem[]).reduce(
+  (acc, q) => { acc[q.id] = q; return acc; },
+  {} as Record<string, QueenItem>
+);
+
+// ── Queen Marker (Bild mit Crown-Fallback) ──
+function QueenMarker({ activeQueen }: { activeQueen: string }) {
+  const queen = QUEEN_LOOKUP[activeQueen];
+  const [imgError, setImgError] = useState(false);
+
+  // Reset error state when queen changes
+  useEffect(() => { setImgError(false); }, [activeQueen]);
+
+  if (!queen?.image || imgError) {
+    return (
+      <Crown className="h-[55%] w-[55%] fill-neutral-900 text-neutral-900" strokeWidth={1.4} />
+    );
+  }
+
+  return (
+    <img
+      src={queen.image}
+      alt={activeQueen}
+      className="h-full w-full object-cover"
+      onError={() => setImgError(true)}
+      draggable={false}
+    />
+  );
+}
 
 export function QueensBoard() {
   const cells = useQueensStore(s => s.cells);
@@ -13,6 +46,7 @@ export function QueensBoard() {
   const cycleCell = useQueensStore(s => s.cycleCell);
   const setCellState = useQueensStore(s => s.setCellState);
   const activeTheme = useQueensStore(s => s.activeTheme);
+  const activeQueen = useQueensStore(s => s.activeQueen);
 
   // Get active theme colors
   const themeItem = SHOP_ITEMS.find(i => i.id === activeTheme);
@@ -153,8 +187,8 @@ export function QueensBoard() {
                 {isHovered && !isSelected && <span className="pointer-events-none absolute inset-1 rounded-md ring-1 ring-white/40" />}
                 <AnimatePresence mode="wait">
                   {isCrown && (
-                    <motion.span key="crown" initial={{ scale: 0, rotate: -45, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 20 }} className="absolute inset-0 flex items-center justify-center">
-                      <Crown className="h-[55%] w-[55%] fill-neutral-900 text-neutral-900" strokeWidth={1.4} />
+                    <motion.span key="crown" initial={{ scale: 0, rotate: -45, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 20 }} className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                      <QueenMarker activeQueen={activeQueen} />
                     </motion.span>
                   )}
                   {isX && !isCrown && (

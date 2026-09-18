@@ -151,7 +151,7 @@ export default function QueensPage() {
                     <span className="text-[12px] font-medium text-[var(--word-gold)]">Level {currentLevel}</span>
                   </motion.div>
                 )}
-                {/* Coins breakdown */}
+                {/* Coins breakdown — original (pre-gamble) when not gambled, gamble summary when gambled */}
                 {lastResult.won && lastPfandflaschenEarned > 0 && pfandflaschenBreakdown && (
                   <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-4 rounded-xl bg-amber-500/[0.06] px-4 py-3 ring-1 ring-amber-500/15">
                     <div className="flex items-center justify-center gap-2 pb-2">
@@ -159,14 +159,33 @@ export default function QueensPage() {
                       <span className="font-mono text-[18px] font-bold tabular-nums text-amber-300">+{lastPfandflaschenEarned}</span>
                       <span className="text-[11px] text-amber-500/70">{gambled && gambleMultiplier > 1 ? `(${gambleMultiplier}x Gamble!)` : 'Pfandflaschen'}</span>
                     </div>
-                    <div className="flex flex-col gap-1 text-[10px] text-neutral-500">
-                      <div className="flex justify-between"><span>Base</span><span className="font-mono text-neutral-300">{pfandflaschenBreakdown.base}</span></div>
-                      {pfandflaschenBreakdown.errorDeduction > 0 && <div className="flex justify-between"><span>Errors (-15% × {errorCount})</span><span className="font-mono text-red-400">-{pfandflaschenBreakdown.errorDeduction}</span></div>}
-                      {pfandflaschenBreakdown.hintDeduction > 0 && <div className="flex justify-between"><span>Hints (-20% × {lastResult.hintsUsed})</span><span className="font-mono text-red-400">-{pfandflaschenBreakdown.hintDeduction}</span></div>}
-                      {pfandflaschenBreakdown.timerBonus > 0 && <div className="flex justify-between"><span>Timer Bonus (0 Hints!)</span><span className="font-mono text-emerald-400">+{pfandflaschenBreakdown.timerBonus}</span></div>}
-                      {pfandflaschenBreakdown.bestTimeBonus > 0 && <div className="flex justify-between"><span>★ New Best Time!</span><span className="font-mono text-[var(--word-gold)]">+{pfandflaschenBreakdown.bestTimeBonus}</span></div>}
-                      {useQueensStore.getState().currentStreakBonus > 0 && <div className="flex justify-between"><span>🔥 Win Streak ×{useQueensStore.getState().streaks[difficulty] ?? 0}</span><span className="font-mono text-orange-400">+{useQueensStore.getState().currentStreakBonus}</span></div>}
-                    </div>
+                    {gambled ? (
+                      // Clean gamble summary — no breakdown to avoid "doppelt multipliziert" perception
+                      <div className="flex flex-col gap-1 text-[10px] text-neutral-500">
+                        <div className="flex justify-between">
+                          <span>Einsatz</span>
+                          <span className="font-mono text-neutral-300">−{pfandflaschenBreakdown.base - pfandflaschenBreakdown.errorDeduction - pfandflaschenBreakdown.hintDeduction + pfandflaschenBreakdown.timerBonus + pfandflaschenBreakdown.bestTimeBonus + (useQueensStore.getState().currentStreakBonus || 0)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Multiplikator</span>
+                          <span className="font-mono text-amber-300">{gambleMultiplier}x</span>
+                        </div>
+                        <div className="my-1 h-px bg-white/[0.06]" />
+                        <div className="flex justify-between">
+                          <span className="font-medium text-amber-300">Gewinn</span>
+                          <span className="font-mono font-bold text-amber-300">+{lastPfandflaschenEarned}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-1 text-[10px] text-neutral-500">
+                        <div className="flex justify-between"><span>Base</span><span className="font-mono text-neutral-300">{pfandflaschenBreakdown.base}</span></div>
+                        {pfandflaschenBreakdown.errorDeduction > 0 && <div className="flex justify-between"><span>Errors (-15% × {errorCount})</span><span className="font-mono text-red-400">-{pfandflaschenBreakdown.errorDeduction}</span></div>}
+                        {pfandflaschenBreakdown.hintDeduction > 0 && <div className="flex justify-between"><span>Hints (-20% × {lastResult.hintsUsed})</span><span className="font-mono text-red-400">-{pfandflaschenBreakdown.hintDeduction}</span></div>}
+                        {pfandflaschenBreakdown.timerBonus > 0 && <div className="flex justify-between"><span>Timer Bonus (0 Hints!)</span><span className="font-mono text-emerald-400">+{pfandflaschenBreakdown.timerBonus}</span></div>}
+                        {pfandflaschenBreakdown.bestTimeBonus > 0 && <div className="flex justify-between"><span>★ New Best Time!</span><span className="font-mono text-[var(--word-gold)]">+{pfandflaschenBreakdown.bestTimeBonus}</span></div>}
+                        {useQueensStore.getState().currentStreakBonus > 0 && <div className="flex justify-between"><span>🔥 Win Streak ×{useQueensStore.getState().streaks[difficulty] ?? 0}</span><span className="font-mono text-orange-400">+{useQueensStore.getState().currentStreakBonus}</span></div>}
+                      </div>
+                    )}
                   </motion.div>
                 )}
                 {/* Gamble Button */}
