@@ -284,13 +284,13 @@
       "image": "/queens/gedagedigeda.png"
     },
     {
-      "id": "queen-sigma-god",
-      "name": "Sigma Emperor",
+      "id": "queen-tripple_t",
+      "name": "Tung Tung Tung Sahur",
       "price": 5000,
-      "description": "The ultimate legendary sigma crown",
+      "description": "The ultimate legendary sigma brainrot",
       "rarity": "legendary",
       "icon": "crown",
-      "image": "/queens/sigma_god.png"
+      "image": "/queens/tripple_t.png"
     }
   ]
 }
