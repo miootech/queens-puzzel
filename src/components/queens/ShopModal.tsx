@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Crown, X, Lock, Check, Palette,
+  Crown, X, Lock, Check, Palette, Flame,
 } from 'lucide-react';
 import { BottleIcon } from "@/components/queens/BottleIcon";
 import { useQueensStore } from '@/lib/queens/queensStore';
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 interface ThemeItem {
   id: string; name: string; price: number;
   description: string; rarity: string; colors: string[];
+  femboyOnly?: boolean;  // Femboy-only Themes
 }
 interface QueenItem {
   id: string; name: string; price: number;
@@ -177,10 +178,12 @@ export function ShopModal() {
   const coins = useQueensStore(s => s.coins);
   const ownedItems = useQueensStore(s => s.ownedItems);
   const activeTheme = useQueensStore(s => s.activeTheme);
+  const activeFemboyTheme = useQueensStore(s => s.activeFemboyTheme);
   const activeQueen = useQueensStore(s => s.activeQueen);
   const toggleShop = useQueensStore(s => s.toggleShop);
   const buyItem = useQueensStore(s => s.buyItem);
   const setTheme = useQueensStore(s => s.setTheme);
+  const setFemboyTheme = useQueensStore(s => s.setFemboyTheme);
   const setQueen = useQueensStore(s => s.setQueen);
 
   const [activeTab, setActiveTab] = useState<'themes' | 'queens'>('themes');
@@ -260,50 +263,104 @@ export function ShopModal() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                className="grid grid-cols-2 gap-3"
+                className="flex flex-col gap-4"
               >
-                {SHOP.themes.map((item, idx) => {
-                  const owned = ownedItems.includes(item.id);
-                  const isActive = activeTheme === item.id;
-                  const canAfford = coins >= item.price;
-                  const rarity = getRarity(item.rarity);
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05, duration: 0.4 }}
-                      whileHover={{ scale: 1.03, y: -2 }}
-                      className={cn(
-                        'relative flex flex-col items-center overflow-hidden rounded-2xl p-4 ring-2 transition-all',
-                        isActive ? 'bg-[var(--word-gold)]/[0.1] ring-[var(--word-gold)]/40' : `bg-white/[0.03] ${rarity.ring} hover:ring-white/20`
-                      )}
-                      style={{ boxShadow: isActive ? '0 4px 20px rgba(244, 208, 63, 0.15)' : '0 2px 12px rgba(0,0,0,0.3)' }}
-                    >
-                      <div className="absolute right-2 top-2">
-                        <span className={cn('rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider', rarity.badge)}>{item.rarity}</span>
-                      </div>
-                      <div className="mt-2 grid w-full grid-cols-6 gap-0.5 overflow-hidden rounded-xl">
-                        {item.colors.slice(0, 12).map((c, i) => (
-                          <div key={i} className="aspect-square w-full" style={{ backgroundColor: c }} />
-                        ))}
-                      </div>
-                      <span className="mt-3 text-[14px] font-semibold tracking-tight text-neutral-50" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{item.name}</span>
-                      <p className="mt-0.5 text-[10px] text-neutral-500">{item.description}</p>
-                      <div className="mt-3 w-full">
-                        {owned ? (
-                          <motion.button onClick={() => setTheme(item.id)} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', isActive ? 'bg-[var(--word-gold)]/20 text-[var(--word-gold)]' : 'bg-white/[0.1] text-neutral-200 hover:bg-white/[0.15]')}>
-                            {isActive ? <><Check className="h-3.5 w-3.5" />Aktiv</> : 'Auswählen'}
-                          </motion.button>
-                        ) : (
-                          <motion.button onClick={() => buyItem(item.id)} disabled={!canAfford} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', canAfford ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600')}>
-                            {canAfford ? <><BottleIcon className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
-                          </motion.button>
+                {/* Normale Themes */}
+                <div className="grid grid-cols-2 gap-3">
+                  {SHOP.themes.filter(t => !t.femboyOnly).map((item, idx) => {
+                    const owned = ownedItems.includes(item.id);
+                    const isActive = activeTheme === item.id;
+                    const canAfford = coins >= item.price;
+                    const rarity = getRarity(item.rarity);
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05, duration: 0.4 }}
+                        whileHover={{ scale: 1.03, y: -2 }}
+                        className={cn(
+                          'relative flex flex-col items-center overflow-hidden rounded-2xl p-4 ring-2 transition-all',
+                          isActive ? 'bg-[var(--word-gold)]/[0.1] ring-[var(--word-gold)]/40' : `bg-white/[0.03] ${rarity.ring} hover:ring-white/20`
                         )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                        style={{ boxShadow: isActive ? '0 4px 20px rgba(244, 208, 63, 0.15)' : '0 2px 12px rgba(0,0,0,0.3)' }}
+                      >
+                        <div className="absolute right-2 top-2">
+                          <span className={cn('rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider', rarity.badge)}>{item.rarity}</span>
+                        </div>
+                        <div className="mt-2 grid w-full grid-cols-6 gap-0.5 overflow-hidden rounded-xl">
+                          {item.colors.slice(0, 12).map((c, i) => (
+                            <div key={i} className="aspect-square w-full" style={{ backgroundColor: c }} />
+                          ))}
+                        </div>
+                        <span className="mt-3 text-[14px] font-semibold tracking-tight text-neutral-50" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{item.name}</span>
+                        <p className="mt-0.5 text-[10px] text-neutral-500">{item.description}</p>
+                        <div className="mt-3 w-full">
+                          {owned ? (
+                            <motion.button onClick={() => setTheme(item.id)} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', isActive ? 'bg-[var(--word-gold)]/20 text-[var(--word-gold)]' : 'bg-white/[0.1] text-neutral-200 hover:bg-white/[0.15]')}>
+                              {isActive ? <><Check className="h-3.5 w-3.5" />Aktiv</> : 'Auswählen'}
+                            </motion.button>
+                          ) : (
+                            <motion.button onClick={() => buyItem(item.id)} disabled={!canAfford} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', canAfford ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600')}>
+                              {canAfford ? <><BottleIcon className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
+                            </motion.button>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Femboy-Extreme-Themes Sektion */}
+                <div className="flex items-center gap-2 rounded-xl bg-pink-500/[0.06] px-4 py-2 ring-1 ring-pink-500/15">
+                  <Flame className="h-4 w-4 fill-pink-400 text-pink-300" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-pink-200">Femboy Extreme Themes</span>
+                  <span className="ml-auto text-[10px] text-pink-300/60">Nur im Femboy-Modus aktiv</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {SHOP.themes.filter(t => t.femboyOnly).map((item, idx) => {
+                    const owned = ownedItems.includes(item.id);
+                    const isActive = activeFemboyTheme === item.id;
+                    const canAfford = coins >= item.price;
+                    const rarity = getRarity(item.rarity);
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05, duration: 0.4 }}
+                        whileHover={{ scale: 1.03, y: -2 }}
+                        className={cn(
+                          'relative flex flex-col items-center overflow-hidden rounded-2xl p-4 ring-2 transition-all',
+                          isActive ? 'bg-pink-500/[0.1] ring-pink-400/40' : `bg-white/[0.03] ${rarity.ring} hover:ring-white/20`
+                        )}
+                        style={{ boxShadow: isActive ? '0 4px 20px rgba(244, 114, 182, 0.15)' : '0 2px 12px rgba(0,0,0,0.3)' }}
+                      >
+                        <div className="absolute right-2 top-2">
+                          <span className={cn('rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider', rarity.badge)}>{item.rarity}</span>
+                        </div>
+                        <div className="mt-2 grid w-full grid-cols-6 gap-0.5 overflow-hidden rounded-xl">
+                          {item.colors.slice(0, 12).map((c, i) => (
+                            <div key={i} className="aspect-square w-full" style={{ backgroundColor: c }} />
+                          ))}
+                        </div>
+                        <span className="mt-3 text-[14px] font-semibold tracking-tight text-neutral-50" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{item.name}</span>
+                        <p className="mt-0.5 text-[10px] text-neutral-500">{item.description}</p>
+                        <div className="mt-3 w-full">
+                          {owned ? (
+                            <motion.button onClick={() => setFemboyTheme(item.id)} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', isActive ? 'bg-pink-500/20 text-pink-300' : 'bg-white/[0.1] text-neutral-200 hover:bg-white/[0.15]')}>
+                              {isActive ? <><Check className="h-3.5 w-3.5" />Aktiv</> : 'Auswählen'}
+                            </motion.button>
+                          ) : (
+                            <motion.button onClick={() => buyItem(item.id)} disabled={!canAfford} whileTap={{ scale: 0.95 }} className={cn('flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-bold transition-colors', canAfford ? 'bg-pink-500/20 text-pink-300 hover:bg-pink-500/30' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600')}>
+                              {canAfford ? <><BottleIcon className="h-3.5 w-3.5" />{item.price}</> : <><Lock className="h-3.5 w-3.5" />{item.price}</>}
+                            </motion.button>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </motion.div>
             ) : (
               <motion.div

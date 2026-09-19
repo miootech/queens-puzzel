@@ -7,7 +7,7 @@ import {
   X, Trophy, Star, Heart, Instagram, Globe, ShoppingBag, Flame,
 } from 'lucide-react';
 import { useQueensStore } from '@/lib/queens/queensStore';
-import { MAX_HINTS, MAX_ERRORS, DIFFICULTY_CONFIG, Difficulty } from '@/lib/queens/types';
+import { MAX_HINTS, MAX_ERRORS, DIFFICULTY_CONFIG, Difficulty, getDifficultyLimits } from '@/lib/queens/types';
 import { QueensBoard } from '@/components/queens/QueensBoard';
 import { BottleIcon } from "@/components/queens/BottleIcon";
 import { ShopModal } from '@/components/queens/ShopModal';
@@ -25,6 +25,7 @@ export default function QueensPage() {
   const isRunning = useQueensStore(s => s.isRunning);
   const hintsUsed = useQueensStore(s => s.hintsUsed);
   const errorCount = useQueensStore(s => s.errorCount);
+  const splitRegionCount = useQueensStore(s => s.splitRegionCount);
   const historyLen = useQueensStore(s => s.history.length);
   const showResult = useQueensStore(s => s.showResult);
   const lastResult = useQueensStore(s => s.lastResult);
@@ -55,26 +56,33 @@ export default function QueensPage() {
   useEffect(() => { if (!init.current) { init.current = true; startNewGame(); } }, [startNewGame]);
   useEffect(() => { if (!isRunning) return; const i = setInterval(() => tick(), 1000); return () => clearInterval(i); }, [isRunning, tick]);
 
-  const hintsLeft = MAX_HINTS - hintsUsed;
+  // Difficulty-spezifische Hint-Limits
+  const currentMaxHints = getDifficultyLimits(difficulty).maxHints;
+  const currentMaxErrors = getDifficultyLimits(difficulty).maxErrors;
+  const hintsLeft = currentMaxHints - hintsUsed;
   const canUndo = historyLen > 1;
-  const difficulties: Difficulty[] = ['easy', 'normal', 'extreme'];
   const currentLevel = levels[difficulty] ?? 1;
   const currentStreak = useQueensStore(s => s.streaks[difficulty] ?? 0);
 
   const handleNext = () => { dismissResult(); startNewGame(); };
 
   return (
-    <div className="bg-mesh relative flex min-h-screen w-full flex-col items-center px-4 py-5">
+    <div className={cn('bg-mesh relative flex min-h-screen w-full flex-col items-center px-4 py-5', difficulty === 'femboy' && 'femboy-bg')}>
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex w-full max-w-md items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/30 to-rose-500/30 ring-1 ring-white/10"><Crown className="h-4 w-4 fill-amber-300 text-amber-300" /></div>
-          <div className="flex flex-col"><span className="text-[9px] font-medium uppercase tracking-[0.22em] text-neutral-500">Logic Puzzle</span><span className="text-[16px] font-semibold leading-none tracking-tight text-neutral-50" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>Queens</span></div>
+          <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-white/10', difficulty === 'femboy' ? 'bg-gradient-to-br from-pink-500/40 to-rose-500/40' : 'bg-gradient-to-br from-amber-500/30 to-rose-500/30')}>
+            <Crown className={cn('h-4 w-4', difficulty === 'femboy' ? 'fill-pink-200 text-pink-200' : 'fill-amber-300 text-amber-300')} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[9px] font-medium uppercase tracking-[0.22em] text-neutral-500">Logic Puzzle</span>
+            <span className="text-[16px] font-semibold leading-none tracking-tight text-neutral-50" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>Queens</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-full bg-amber-500/[0.08] px-3 py-1.5 ring-1 ring-amber-500/20">
-            <BottleIcon className="h-3.5 w-3.5 text-amber-400" />
-            <span className="font-mono text-[13px] font-bold tabular-nums text-amber-300">{mounted ? coins : 0}</span>
+          <div className={cn('flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1', difficulty === 'femboy' ? 'bg-pink-500/[0.08] ring-pink-500/20' : 'bg-amber-500/[0.08] ring-amber-500/20')}>
+            <BottleIcon className={cn('h-3.5 w-3.5', difficulty === 'femboy' ? 'text-pink-300' : 'text-amber-400')} />
+            <span className={cn('font-mono text-[13px] font-bold tabular-nums', difficulty === 'femboy' ? 'text-pink-200' : 'text-amber-300')}>{mounted ? coins : 0}</span>
           </div>
           <motion.button onClick={toggleShop} whileTap={{ scale: 0.92 }} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.04] text-neutral-400 ring-1 ring-white/[0.06] hover:bg-white/[0.08] hover:text-white" aria-label="Shop"><ShoppingBag className="h-[16px] w-[16px]" /></motion.button>
           <motion.button onClick={toggleStats} whileTap={{ scale: 0.92 }} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.04] text-neutral-400 ring-1 ring-white/[0.06] hover:bg-white/[0.08] hover:text-white" aria-label="Stats"><BarChart3 className="h-[16px] w-[16px]" /></motion.button>
@@ -83,10 +91,15 @@ export default function QueensPage() {
 
       {/* Level Pill + Streak */}
       <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03, duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="mt-4 flex items-center gap-3">
-        <motion.div animate={{ scale: currentLevel > 1 ? [1, 1.08, 1] : 1 }} transition={{ duration: 0.4, ease: 'easeInOut' }} className="flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[var(--word-gold)]/[0.12] via-[var(--word-gold)]/[0.08] to-[var(--word-gold)]/[0.12] px-6 py-2.5 ring-1 ring-[var(--word-gold)]/25" style={{ boxShadow: '0 4px 20px rgba(244, 208, 63, 0.1)' }}>
-          <Star className="h-4 w-4 fill-[var(--word-gold)] text-[var(--word-gold)]" />
-          <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-400">Level</span>
-          <span className="font-mono text-[20px] font-bold tabular-nums text-[var(--word-gold)]" style={{ textShadow: '0 0 12px rgba(244, 208, 63, 0.3)' }}>{mounted ? currentLevel : 1}</span>
+        <motion.div animate={{ scale: currentLevel > 1 ? [1, 1.08, 1] : 1 }} transition={{ duration: 0.4, ease: 'easeInOut' }} className={cn(
+          'flex items-center gap-2.5 rounded-full px-6 py-2.5 ring-1',
+          difficulty === 'femboy'
+            ? 'bg-gradient-to-r from-pink-500/[0.15] via-rose-500/[0.1] to-pink-500/[0.15] ring-pink-400/40'
+            : 'bg-gradient-to-r from-[var(--word-gold)]/[0.12] via-[var(--word-gold)]/[0.08] to-[var(--word-gold)]/[0.12] ring-[var(--word-gold)]/25'
+        )} style={{ boxShadow: difficulty === 'femboy' ? '0 4px 20px rgba(244, 114, 182, 0.15)' : '0 4px 20px rgba(244, 208, 63, 0.1)' }}>
+          <Star className={cn('h-4 w-4', difficulty === 'femboy' ? 'fill-pink-400 text-pink-400' : 'fill-[var(--word-gold)] text-[var(--word-gold)]')} />
+          <span className={cn('text-[11px] font-medium uppercase tracking-[0.18em]', difficulty === 'femboy' ? 'text-pink-200/70' : 'text-neutral-400')}>Level</span>
+          <span className={cn('font-mono text-[20px] font-bold tabular-nums', difficulty === 'femboy' ? 'text-pink-300' : 'text-[var(--word-gold)]')} style={{ textShadow: difficulty === 'femboy' ? '0 0 12px rgba(244, 114, 182, 0.3)' : '0 0 12px rgba(244, 208, 63, 0.3)' }}>{mounted ? currentLevel : 1}</span>
         </motion.div>
         {mounted && currentStreak >= 2 && (
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-1.5 rounded-full bg-orange-500/[0.12] px-3 py-2.5 ring-1 ring-orange-500/25" style={{ boxShadow: '0 4px 16px rgba(249, 115, 22, 0.15)' }}>
@@ -96,11 +109,54 @@ export default function QueensPage() {
         )}
       </motion.div>
 
-      {/* Difficulty pills */}
+      {/* Difficulty pills — Row 1: Easy, Normal, Extreme (3 Pills equal) */}
       <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mt-3 flex w-full max-w-md items-center justify-center gap-1.5 rounded-full bg-white/[0.03] p-1 ring-1 ring-white/[0.05]">
-        {difficulties.map(d => { const cfg = DIFFICULTY_CONFIG[d]; const isActive = difficulty === d; return (
-          <motion.button key={d} onClick={() => setDifficulty(d)} whileTap={{ scale: 0.95 }} className={cn('flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors', isActive ? 'bg-white/[0.1] text-neutral-50 ring-1 ring-white/10' : 'text-neutral-500 hover:text-neutral-300')}>{cfg.label}<span className="text-[9px] opacity-60">{cfg.size}×{cfg.size}</span></motion.button>
-        ); })}
+        {(['easy', 'normal', 'extreme'] as Difficulty[]).map(d => {
+          const cfg = DIFFICULTY_CONFIG[d];
+          const isActive = difficulty === d;
+          return (
+            <motion.button
+              key={d}
+              onClick={() => setDifficulty(d)}
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all',
+                isActive
+                  ? 'bg-white/[0.1] text-neutral-50 ring-1 ring-white/10'
+                  : 'text-neutral-500 hover:text-neutral-300'
+              )}
+            >
+              {cfg.label}
+              <span className="text-[9px] opacity-60">{cfg.size}×{cfg.size}</span>
+            </motion.button>
+          );
+        })}
+      </motion.div>
+
+      {/* Row 2: Femboy allein, zentriert, kürzer aber gleiche Dicke wie Row 1 */}
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="mt-2 flex w-full max-w-md justify-center"
+      >
+        {/* Wrap in w-3/4 container for shorter width while keeping pill same style as Row 1 */}
+        <div className="flex w-3/4 items-center justify-center gap-1.5 rounded-full bg-white/[0.03] p-1 ring-1 ring-white/[0.05]">
+          <motion.button
+            onClick={() => setDifficulty('femboy')}
+            whileTap={{ scale: 0.95 }}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all',
+              difficulty === 'femboy'
+                ? 'bg-gradient-to-r from-pink-500/30 to-rose-500/30 text-pink-200 ring-1 ring-pink-400/40'
+                : 'text-pink-400/70 hover:text-pink-300'
+            )}
+          >
+            <Flame className={cn('h-3 w-3 shrink-0', difficulty === 'femboy' ? 'fill-pink-400 text-pink-300' : 'fill-pink-500/50 text-pink-500/50')} />
+            <span className="truncate font-bold uppercase tracking-tight">{DIFFICULTY_CONFIG.femboy.label}</span>
+            <span className="text-[9px] opacity-60 shrink-0">{DIFFICULTY_CONFIG.femboy.size}×{DIFFICULTY_CONFIG.femboy.size}</span>
+          </motion.button>
+        </div>
       </motion.div>
 
       {/* Timer + Errors */}
@@ -108,20 +164,58 @@ export default function QueensPage() {
         <div className="flex items-center gap-1.5"><Clock className="h-[14px] w-[14px] text-neutral-600" /><span className="font-mono text-[15px] font-medium tabular-nums text-neutral-400">{formatTime(timeSeconds)}</span></div>
         <div className="h-3 w-px bg-white/10" />
         <div className="flex items-center gap-1.5"><span className="text-[10px] font-medium uppercase tracking-wider text-neutral-500">Errors</span>
-          <div className="flex gap-1">{Array.from({ length: MAX_ERRORS }).map((_, i) => (
+          <div className="flex gap-1">{Array.from({ length: currentMaxErrors }).map((_, i) => (
             <motion.div key={i} animate={{ backgroundColor: i < errorCount ? '#ef4444' : 'rgba(255,255,255,0.08)', scale: i < errorCount ? 1 : 0.85 }} className="flex h-4 w-4 items-center justify-center rounded-md">{i < errorCount && <X className="h-2 w-2 text-white" strokeWidth={3} />}</motion.div>
           ))}</div>
         </div>
       </motion.div>
 
+      {/* Femboy-Modus: Hilfe-Text für split regions */}
+      {difficulty === 'femboy' && splitRegionCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className={cn(
+            'mt-2 flex items-center justify-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-medium',
+            'bg-pink-500/[0.06] text-pink-300/80 ring-1 ring-pink-500/15'
+          )}
+        >
+          <Flame className="h-2.5 w-2.5 fill-pink-400/70 text-pink-400/70" />
+          <span>{splitRegionCount} regions are split — don't put two queens in the same region</span>
+        </motion.div>
+      )}
+
       {/* Board */}
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="mt-4 flex flex-1 flex-col items-center justify-center">{cells && <QueensBoard />}</motion.div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="mt-4 flex flex-1 flex-col items-center justify-center">
+        {cells && <QueensBoard />}
+        {/* Femboy-Modus: "crafted with love" Footer unterm Grid + subtile Herz am Ende */}
+        {difficulty === 'femboy' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-3 flex items-center justify-center gap-1.5 text-[10px] italic text-pink-400/60"
+            style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' }}
+          >
+            <span>crafted with love for my beautiful girlfriend</span>
+            {/* Subtile Herz (SVG, kein Emoji) */}
+            <svg
+              viewBox="0 0 24 24"
+              className="h-2.5 w-2.5 fill-pink-400/50"
+              aria-hidden="true"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </motion.div>
+        )}
+      </motion.div>
 
       {/* Action buttons */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-5 grid w-full max-w-md grid-cols-3 gap-2">
         <motion.button onClick={reset} whileTap={{ scale: 0.97 }} className="flex items-center justify-center gap-1.5 rounded-xl bg-white/[0.04] py-2.5 text-[12px] font-medium text-neutral-300 ring-1 ring-white/[0.06] hover:bg-white/[0.08]"><RotateCcw className="h-3.5 w-3.5" />New</motion.button>
         <motion.button onClick={undo} whileTap={{ scale: 0.97 }} disabled={!canUndo} className={cn('flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12px] font-medium ring-1', canUndo ? 'bg-white/[0.04] text-neutral-300 ring-white/[0.06] hover:bg-white/[0.08]' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600 ring-white/[0.03]')}><Undo2 className="h-3.5 w-3.5" />Undo</motion.button>
-        <motion.button onClick={useHint} whileTap={{ scale: 0.97 }} disabled={hintsLeft === 0} className={cn('flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12px] font-medium ring-1', hintsLeft > 0 ? 'bg-[var(--word-gold)]/[0.08] text-[var(--word-gold)] ring-[var(--word-gold)]/20 hover:bg-[var(--word-gold)]/[0.14]' : 'cursor-not-allowed bg-white/[0.02] text-neutral-600 ring-white/[0.03]')}><Lightbulb className="h-3.5 w-3.5" />Hint {hintsLeft}</motion.button>
+        <motion.button onClick={useHint} whileTap={{ scale: 0.97 }} disabled={hintsLeft === 0} className={cn('flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12px] font-medium ring-1', hintsLeft > 0 ? (difficulty === 'femboy' ? 'bg-pink-500/[0.1] text-pink-300 ring-pink-500/25 hover:bg-pink-500/[0.18]' : 'bg-[var(--word-gold)]/[0.08] text-[var(--word-gold)] ring-[var(--word-gold)]/20 hover:bg-[var(--word-gold)]/[0.14]') : 'cursor-not-allowed bg-white/[0.02] text-neutral-600 ring-white/[0.03]')}><Lightbulb className="h-3.5 w-3.5" />Hint {hintsLeft}</motion.button>
       </motion.div>
 
       {/* Footer */}

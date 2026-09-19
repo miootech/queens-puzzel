@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, X } from 'lucide-react';
 import { useQueensStore } from '@/lib/queens/queensStore';
-import { REGION_COLORS, SHOP_ITEMS } from '@/lib/queens/types';
+import { REGION_COLORS, REGION_COLORS_FEMBOY, SHOP_ITEMS } from '@/lib/queens/types';
 import shopData from '@/lib/queens/shop-items.json';
 import { cn } from '@/lib/utils';
 
@@ -15,24 +15,42 @@ const QUEEN_LOOKUP: Record<string, QueenItem> = (shopData.queens as QueenItem[])
   {} as Record<string, QueenItem>
 );
 
+// ── Luminanz berechnen: gibt 'weiß' oder 'schwarz' zurück je nach Hintergrund-Helligkeit ──
+// Wenn Hintergrund dunkel ist (z.B. Kohle-Schwarz #1A1A1A), wird Queen/X hell (weiß)
+// Wenn Hintergrund hell ist (z.B. Yellow #FFD700), wird Queen/X dunkel (schwarz)
+function getContrastColor(hexColor: string): string {
+  // Hex in RGB umwandeln
+  const hex = hexColor.replace('#', '');
+  if (hex.length !== 6) return '#000000';
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  // Relative Luminanz (W3C-Standard)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  // Wenn Luminanz < 0.5, Hintergrund ist dunkel → weißes Icon
+  // Sonst → schwarzes Icon
+  return luminance < 0.5 ? '#FFFFFF' : '#000000';
+}
+
 // ── Queen Marker (Bild mit Crown-Fallback) ──
 // Bild wird als zentrierter Circle innerhalb der Zelle angezeigt (nicht full-bleed)
-function QueenMarker({ activeQueen }: { activeQueen: string }) {
+// Aktuell: bg übergeben, um Icon-Farbe an Hintergrund-Helligkeit anzupassen (dark-on-light, light-on-dark)
+function QueenMarker({ activeQueen, bgColor }: { activeQueen: string; bgColor: string }) {
   const queen = QUEEN_LOOKUP[activeQueen];
   const [imgError, setImgError] = useState(false);
+  const iconColor = getContrastColor(bgColor);
 
   // Reset error state when queen changes
   useEffect(() => { setImgError(false); }, [activeQueen]);
 
-  // Fallback: klassische Krone, ca. 55% der Zelle
+  // Fallback: klassische Krone, ca. 55% der Zelle, Farbe an Hintergrund angepasst
   if (!queen?.image || imgError) {
     return (
-      <Crown className="h-[55%] w-[55%] fill-neutral-900 text-neutral-900" strokeWidth={1.4} />
+      <Crown className="h-[55%] w-[55%]" fill={iconColor} stroke={iconColor} strokeWidth={1.4} />
     );
   }
 
   // Bild in zentriertem Kreis: 70% der Zellgröße, rounded-full, object-cover
-  // → Bild ist ein kreisförmiger Stempel in der Zellmitte, nicht full-bleed
   return (
     <div
       className="flex h-[70%] w-[70%] items-center justify-center overflow-hidden rounded-full ring-2 ring-black/20"
@@ -55,11 +73,19 @@ export function QueensBoard() {
   const cycleCell = useQueensStore(s => s.cycleCell);
   const setCellState = useQueensStore(s => s.setCellState);
   const activeTheme = useQueensStore(s => s.activeTheme);
+  const activeFemboyTheme = useQueensStore(s => s.activeFemboyTheme);
   const activeQueen = useQueensStore(s => s.activeQueen);
+  const difficulty = useQueensStore(s => s.difficulty);
 
-  // Get active theme colors
-  const themeItem = SHOP_ITEMS.find(i => i.id === activeTheme);
-  const activeColors = themeItem?.colors ?? REGION_COLORS;
+  // Femboy-Modus: verwende das aktive Femboy-Theme aus dem Shop (theme-femboy-default ist Hellfire)
+  // Andere Modi: Theme-Farben falls aktiv, sonst REGION_COLORS (Pastell)
+  const isFemboy = difficulty === 'femboy';
+  const femboyThemeData = isFemboy
+    ? shopData.themes.find(t => t.id === activeFemboyTheme)
+    : null;
+  const activeColors = isFemboy
+    ? (femboyThemeData?.colors ?? REGION_COLORS_FEMBOY)
+    : (SHOP_ITEMS.find(i => i.id === activeTheme)?.colors ?? REGION_COLORS);
 
   const [hoveredCell, setHoveredCell] = useState<{ r: number; c: number } | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
@@ -141,7 +167,8 @@ export function QueensBoard() {
 
   const cellSizeClass = size <= 6 ? 'w-[14vw] h-[14vw] max-w-[58px] max-h-[58px] sm:w-[56px] sm:h-[56px] text-2xl'
     : size <= 8 ? 'w-[10.5vw] h-[10.5vw] max-w-[42px] max-h-[42px] sm:w-[42px] sm:h-[42px] text-lg'
-    : 'w-[7.5vw] h-[7.5vw] max-w-[30px] max-h-[30px] sm:w-[30px] sm:h-[30px] text-sm';
+    : size <= 12 ? 'w-[7.5vw] h-[7.5vw] max-w-[30px] max-h-[30px] sm:w-[30px] sm:h-[30px] text-sm'
+    : 'w-[6vw] h-[6vw] max-w-[24px] max-h-[24px] sm:w-[24px] sm:h-[24px] text-xs'; // 15×15 Femboy-Modus
 
   const borderFor = (r: number, c: number): React.CSSProperties => {
     const cell = cells[r][c]; const rid = cell.regionId;
@@ -149,7 +176,17 @@ export function QueensBoard() {
     const bottom = r < size - 1 ? cells[r + 1][c].regionId !== rid : true;
     const left = c > 0 ? cells[r][c - 1].regionId !== rid : true;
     const right = c < size - 1 ? cells[r][c + 1].regionId !== rid : true;
-    return { borderTopWidth: top ? 3 : 0.5, borderBottomWidth: bottom ? 3 : 0.5, borderLeftWidth: left ? 3 : 0.5, borderRightWidth: right ? 3 : 0.5 };
+    // Femboy-Modus (15x15): 2px Borders mit schwarz/90% für klare Sichtbarkeit
+    // (vorher 1.5px was zu dünn und verschwand bei vibranten Farben)
+    const borderWidth = difficulty === 'femboy' ? 2 : 3;
+    return {
+      borderTopWidth: top ? borderWidth : 0.5,
+      borderBottomWidth: bottom ? borderWidth : 0.5,
+      borderLeftWidth: left ? borderWidth : 0.5,
+      borderRightWidth: right ? borderWidth : 0.5,
+      borderColor: 'rgba(0, 0, 0, 0.9)',
+      borderStyle: 'solid',
+    };
   };
 
   return (
@@ -197,19 +234,19 @@ export function QueensBoard() {
                 <AnimatePresence mode="wait">
                   {isCrown && (
                     <motion.span key="crown" initial={{ scale: 0, rotate: -45, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 20 }} className="absolute inset-0 flex items-center justify-center overflow-hidden">
-                      <QueenMarker activeQueen={activeQueen} />
+                      <QueenMarker activeQueen={activeQueen} bgColor={color} />
                     </motion.span>
                   )}
                   {isX && !isCrown && (
                     <motion.span key="x" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 0.55 }} exit={{ scale: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 600, damping: 22 }} className="absolute inset-0 flex items-center justify-center">
-                      <X className="h-1/2 w-1/2 text-neutral-900/70" strokeWidth={3} />
+                      <X className="h-1/2 w-1/2" strokeWidth={3} style={{ color: getContrastColor(color), opacity: 0.7 }} />
                     </motion.span>
                   )}
                 </AnimatePresence>
                 <AnimatePresence>
                   {isHintExclude && !isCrown && (
                     <motion.span key={`hint-${r}-${c}`} initial={{ scale: 0, opacity: 0, rotate: -45 }} animate={{ scale: 1, opacity: 0.6, rotate: 0 }} exit={{ scale: 0, opacity: 0, rotate: 45 }} transition={{ type: 'spring', stiffness: 500, damping: 18, delay: (r + c) * 0.04 }} className="absolute inset-0 flex items-center justify-center">
-                      <X className="h-[45%] w-[45%] text-neutral-900/60" strokeWidth={2.5} />
+                      <X className="h-[45%] w-[45%]" strokeWidth={2.5} style={{ color: getContrastColor(color), opacity: 0.6 }} />
                     </motion.span>
                   )}
                 </AnimatePresence>

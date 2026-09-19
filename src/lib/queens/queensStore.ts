@@ -10,6 +10,7 @@ import {
   DIFFICULTY_CONFIG,
   MAX_HINTS,
   MAX_ERRORS,
+  getDifficultyLimits,
 } from './types';
 import { generatePuzzle, validateBoard, isSolved } from './generator';
 import shopData from './shop-items.json';
@@ -26,6 +27,7 @@ const LEVEL_KEY = 'queens_levels_v1';
 const COINS_KEY = 'queens_pfandflaschen_v1';
 const OWNED_KEY = 'queens_owned_v1';
 const ACTIVE_THEME_KEY = 'queens_theme_v1';
+const ACTIVE_FEMBOY_THEME_KEY = 'queens_femboy_theme_v1';
 const ACTIVE_QUEEN_KEY = 'queens_queen_v1';
 
 // Old keys for migration
@@ -127,13 +129,13 @@ function loadDifficulty(): Difficulty { if (typeof window === 'undefined') retur
 function saveDifficulty(d: Difficulty): void { if (typeof window !== 'undefined') try { window.localStorage.setItem(DIFF_KEY, d); } catch { } }
 
 function loadLevels(): Record<Difficulty, number> {
-  if (typeof window === 'undefined') return { easy: 1, normal: 1, extreme: 1 };
+  if (typeof window === 'undefined') return { easy: 1, normal: 1, extreme: 1, femboy: 1 };
   try {
     const raw = window.localStorage.getItem(LEVEL_KEY);
-    if (!raw) return { easy: 1, normal: 1, extreme: 1 };
+    if (!raw) return { easy: 1, normal: 1, extreme: 1, femboy: 1 };
     const parsed = JSON.parse(raw) as Partial<Record<Difficulty, number>>;
-    return { easy: parsed.easy ?? 1, normal: parsed.normal ?? 1, extreme: parsed.extreme ?? 1 };
-  } catch { return { easy: 1, normal: 1, extreme: 1 }; }
+    return { easy: parsed.easy ?? 1, normal: parsed.normal ?? 1, extreme: parsed.extreme ?? 1, femboy: parsed.femboy ?? 1 };
+  } catch { return { easy: 1, normal: 1, extreme: 1, femboy: 1 }; }
 }
 function saveLevels(levels: Record<Difficulty, number>): void {
   if (typeof window !== 'undefined') try { window.localStorage.setItem(LEVEL_KEY, JSON.stringify(levels)); } catch { }
@@ -151,13 +153,13 @@ function saveCoins(coins: number): void {
 const STREAK_KEY = 'queens_streak_v1';
 
 function loadStreaks(): Record<Difficulty, number> {
-  if (typeof window === 'undefined') return { easy: 0, normal: 0, extreme: 0 };
+  if (typeof window === 'undefined') return { easy: 0, normal: 0, extreme: 0, femboy: 0 };
   try {
     const raw = window.localStorage.getItem(STREAK_KEY);
-    if (!raw) return { easy: 0, normal: 0, extreme: 0 };
+    if (!raw) return { easy: 0, normal: 0, extreme: 0, femboy: 0 };
     const parsed = JSON.parse(raw) as Partial<Record<Difficulty, number>>;
-    return { easy: parsed.easy ?? 0, normal: parsed.normal ?? 0, extreme: parsed.extreme ?? 0 };
-  } catch { return { easy: 0, normal: 0, extreme: 0 }; }
+    return { easy: parsed.easy ?? 0, normal: parsed.normal ?? 0, extreme: parsed.extreme ?? 0, femboy: parsed.femboy ?? 0 };
+  } catch { return { easy: 0, normal: 0, extreme: 0, femboy: 0 }; }
 }
 function saveStreaks(streaks: Record<Difficulty, number>): void {
   if (typeof window !== 'undefined') try { window.localStorage.setItem(STREAK_KEY, JSON.stringify(streaks)); } catch { }
@@ -183,6 +185,16 @@ function loadActiveTheme(): string {
 }
 function saveActiveTheme(id: string): void {
   if (typeof window !== 'undefined') try { window.localStorage.setItem(ACTIVE_THEME_KEY, id); } catch { }
+}
+// Femboy-Theme State (separat gespeichert, damit User Femboy-Themes kaufen kann
+// ohne seine normalen Theme-Wahl zu beeinflussen)
+// Default ist 'theme-femboy-default' (Hellfire, kostenlos)
+function loadActiveFemboyTheme(): string {
+  if (typeof window === 'undefined') return 'theme-femboy-default';
+  try { return window.localStorage.getItem(ACTIVE_FEMBOY_THEME_KEY) ?? 'theme-femboy-default'; } catch { return 'theme-femboy-default'; }
+}
+function saveActiveFemboyTheme(id: string): void {
+  if (typeof window !== 'undefined') try { window.localStorage.setItem(ACTIVE_FEMBOY_THEME_KEY, id); } catch { }
 }
 function loadActiveQueen(): string {
   if (typeof window === 'undefined') return 'queen-classic';
@@ -212,6 +224,7 @@ function calculatePfandflaschenEarned(
     easy: [42, 50],
     normal: [67, 76],
     extreme: [88, 101],
+    femboy: [167, 187], // User-spec: Default 167-187 coins pro win
   };
   const [minBase, maxBase] = baseRanges[difficulty];
   const base = Math.floor(Math.random() * (maxBase - minBase + 1)) + minBase;
@@ -223,8 +236,9 @@ function calculatePfandflaschenEarned(
   // Timer bonus (only if 0 hints used)
   let timerBonus = 0;
   if (hintsUsed === 0) {
-    const timerThresholds: Record<Difficulty, number> = { easy: 60, normal: 120, extreme: 240 };
-    const timerBonuses: Record<Difficulty, number> = { easy: 42, normal: 67, extreme: 187 };
+    // Femboy: Sub-5min (300s) Bonus = 280 (50% mehr als Extreme's 187)
+    const timerThresholds: Record<Difficulty, number> = { easy: 60, normal: 120, extreme: 240, femboy: 300 };
+    const timerBonuses: Record<Difficulty, number> = { easy: 42, normal: 67, extreme: 187, femboy: 280 };
     if (timeSeconds <= timerThresholds[difficulty]) {
       timerBonus = timerBonuses[difficulty];
     }
@@ -233,7 +247,8 @@ function calculatePfandflaschenEarned(
   // Best time bonus (only if 0 hints used AND new best time)
   let bestTimeBonus = 0;
   if (hintsUsed === 0 && isNewBestTime) {
-    const bestTimeBonuses: Record<Difficulty, number> = { easy: 25, normal: 50, extreme: 100 };
+    // Femboy: 200 Best Time Bonus (vs 100 bei Extreme)
+    const bestTimeBonuses: Record<Difficulty, number> = { easy: 25, normal: 50, extreme: 100, femboy: 200 };
     bestTimeBonus = bestTimeBonuses[difficulty];
   }
 
@@ -264,9 +279,14 @@ function computeHintCells(cells: Cell[][], size: number, solution: { row: number
   }
   const openRegions = Array.from(regionCells.entries()).filter(([rid]) => !crownRegions.has(rid));
   if (openRegions.length === 0) return [];
+
+  // Wähle die kleinste offene Region als Hint-Target
   openRegions.sort((a, b) => a[1].length - b[1].length);
   const [smallestRegionId, cellsList] = openRegions[0];
   const sq = solution.find(q => cells[q.row][q.col].regionId === smallestRegionId);
+
+  // Returns: ALLE Zellen dieser Region außer der Lösungszelle (wo Queen hin soll)
+  // → Beide Teile einer getrennten Region werden ausgekreuzt (außer dem 1 Lösungsfeld)
   return cellsList.filter(c => !sq || !(c.r === sq.row && c.c === sq.col)).map(c => ({ r: c.r, c: c.c }));
 }
 
@@ -275,11 +295,13 @@ interface QueensState {
   history: Cell[][][]; errors: { row: number; col: number }[]; errorCount: number;
   timeSeconds: number; isRunning: boolean; isGameOver: boolean; hasWon: boolean;
   hintsUsed: number; lastResult: QueensStats | null; stats: PersistentStats;
+  splitRegionCount: number; // Anzahl gesplitteter Regionen (für Femboy-Modus Hilfe-Text)
   showStats: boolean; showResult: boolean; showShop: boolean; showGamble: boolean;
   levels: Record<Difficulty, number>;
   coins: number;
   ownedItems: string[];
   activeTheme: string;
+  activeFemboyTheme: string; // Separate Theme-Variable für Femboy-Modus
   activeQueen: string;
   lastPfandflaschenEarned: number;
   pfandflaschenBreakdown: { base: number; errorDeduction: number; hintDeduction: number; timerBonus: number; bestTimeBonus: number } | null;
@@ -295,13 +317,54 @@ interface QueensState {
   useHint: () => void; endGame: (won: boolean) => void; tick: () => void;
   toggleStats: () => void; toggleShop: () => void; dismissResult: () => void;
   buyItem: (id: string) => void;
-  setTheme: (id: string) => void; setQueen: (id: string) => void;
+  setTheme: (id: string) => void; setFemboyTheme: (id: string) => void; setQueen: (id: string) => void;
   startGamble: () => void; applyGamble: (multiplier: number) => void; skipGamble: () => void;
+}
+
+// Hilfsfunktion: zählt wie viele Regionen im Grid "split" sind (nicht-zusammenhängend)
+// Eine Region ist split, wenn sie aus mehr als 1 disconnected Teil besteht
+function countSplitRegions(cells: Cell[][], size: number): number {
+  if (!cells || size === 0) return 0;
+  const visited: boolean[][] = Array.from({ length: size }, () => Array(size).fill(false));
+  const regionComponentCount = new Map<number, number>();
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (visited[r][c]) continue;
+      const rid = cells[r][c].regionId;
+      // BFS für diese Komponente
+      const stack = [{ r, c }];
+      let isComponent = false;
+      while (stack.length > 0) {
+        const { r: cr, c: cc } = stack.pop()!;
+        if (cr < 0 || cr >= size || cc < 0 || cc >= size) continue;
+        if (visited[cr][cc]) continue;
+        if (cells[cr][cc].regionId !== rid) continue;
+        visited[cr][cc] = true;
+        isComponent = true;
+        stack.push({ r: cr - 1, c: cc });
+        stack.push({ r: cr + 1, c: cc });
+        stack.push({ r: cr, c: cc - 1 });
+        stack.push({ r: cr, c: cc + 1 });
+      }
+      if (isComponent) {
+        regionComponentCount.set(rid, (regionComponentCount.get(rid) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Zähle Regionen mit > 1 Komponenten (also split)
+  let splitCount = 0;
+  for (const [, count] of regionComponentCount) {
+    if (count > 1) splitCount++;
+  }
+  return splitCount;
 }
 
 function buildNewGame(d: Difficulty) {
   const cfg = DIFFICULTY_CONFIG[d]; const p = generatePuzzle(cfg.size);
-  return { difficulty: d, size: cfg.size, cells: p.cells, solution: p.queens, history: [p.cells.map(r => r.map(c => ({ ...c })))], errors: [], errorCount: 0, timeSeconds: 0, isRunning: true, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, showResult: false };
+  const splitCount = countSplitRegions(p.cells, cfg.size);
+  return { difficulty: d, size: cfg.size, cells: p.cells, solution: p.queens, history: [p.cells.map(r => r.map(c => ({ ...c })))], errors: [], errorCount: 0, timeSeconds: 0, isRunning: true, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, showResult: false, splitRegionCount: splitCount };
 }
 
 // Run migration on module load (client-side only)
@@ -310,8 +373,8 @@ if (typeof window !== 'undefined') {
 }
 
 export const useQueensStore = create<QueensState>((set, get) => ({
-  difficulty: 'normal', size: 8, cells: null, solution: null, history: [], errors: [], errorCount: 0, timeSeconds: 0, isRunning: false, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, stats: loadStats(), showStats: false, showResult: false, showShop: false, showGamble: false,
-  levels: loadLevels(), coins: loadCoins(), ownedItems: loadOwned(), activeTheme: loadActiveTheme(), activeQueen: loadActiveQueen(), lastPfandflaschenEarned: 0,
+  difficulty: 'normal', size: 8, cells: null, solution: null, history: [], errors: [], errorCount: 0, timeSeconds: 0, isRunning: false, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, stats: loadStats(), splitRegionCount: 0, showStats: false, showResult: false, showShop: false, showGamble: false,
+  levels: loadLevels(), coins: loadCoins(), ownedItems: loadOwned(), activeTheme: loadActiveTheme(), activeFemboyTheme: loadActiveFemboyTheme(), activeQueen: loadActiveQueen(), lastPfandflaschenEarned: 0,
   pfandflaschenBreakdown: null, gambleBet: 0, gambleMultiplier: 0, gambled: false,
   streaks: loadStreaks(), currentStreakBonus: 0,
 
@@ -327,7 +390,8 @@ export const useQueensStore = create<QueensState>((set, get) => ({
     let nec = state.errorCount; if (newState === 'crown' && prevState !== 'crown' && errSet.has(`${r},${c}`)) nec = state.errorCount + 1;
     const nh = [...state.history, ng.map(row => row.map(c2 => ({ ...c2 })))];
     set({ cells: ng, history: nh, errors: errs, errorCount: nec });
-    if (nec >= MAX_ERRORS) { setTimeout(() => get().endGame(false), 200); return; }
+    const maxErrors = getDifficultyLimits(state.difficulty).maxErrors;
+    if (nec >= maxErrors) { setTimeout(() => get().endGame(false), 200); return; }
     if (isSolved(ng, state.size)) setTimeout(() => get().endGame(true), 200);
   },
   cycleCell: (r, c) => {
@@ -354,10 +418,13 @@ export const useQueensStore = create<QueensState>((set, get) => ({
     const state = get(); if (!state.cells) return;
     const cfg = DIFFICULTY_CONFIG[state.difficulty];
     const puzzle = generatePuzzle(cfg.size);
-    set({ cells: puzzle.cells, solution: puzzle.queens, history: [puzzle.cells.map(row => row.map(c => ({ ...c })))], errors: [], errorCount: 0, timeSeconds: 0, isRunning: true, isGameOver: false, hasWon: false, hintsUsed: 0, showResult: false });
+    const splitCount = countSplitRegions(puzzle.cells, cfg.size);
+    set({ cells: puzzle.cells, solution: puzzle.queens, history: [puzzle.cells.map(row => row.map(c => ({ ...c })))], errors: [], errorCount: 0, timeSeconds: 0, isRunning: true, isGameOver: false, hasWon: false, hintsUsed: 0, showResult: false, splitRegionCount: splitCount });
   },
   useHint: () => {
-    const state = get(); if (!state.cells || state.isGameOver || state.hintsUsed >= MAX_HINTS) return;
+    const state = get(); if (!state.cells || state.isGameOver) return;
+    const maxHints = getDifficultyLimits(state.difficulty).maxHints;
+    if (state.hintsUsed >= maxHints) return;
     const targets = computeHintCells(state.cells, state.size, state.solution);
     if (targets.length === 0) return;
     const ng = state.cells.map(row => row.map(cell => ({ ...cell })));
@@ -455,5 +522,6 @@ export const useQueensStore = create<QueensState>((set, get) => ({
     set({ coins: newCoins, ownedItems: newOwned });
   },
   setTheme: (id) => { saveActiveTheme(id); set({ activeTheme: id }); },
+  setFemboyTheme: (id) => { saveActiveFemboyTheme(id); set({ activeFemboyTheme: id }); },
   setQueen: (id) => { saveActiveQueen(id); set({ activeQueen: id }); },
 }));

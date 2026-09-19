@@ -15,6 +15,7 @@ const DIFFICULTY_COLORS: Record<Difficulty, string> = {
   easy: '#52BE80',
   normal: '#5DADE2',
   extreme: '#EC7063',
+  femboy: '#F472B6', // Femboy Pink
 };
 
 export function StatsModal() {
@@ -23,7 +24,7 @@ export function StatsModal() {
   const streaks = useQueensStore(s => s.streaks);
   const coins = useQueensStore(s => s.coins);
   const toggleStats = useQueensStore(s => s.toggleStats);
-  const difficulties: Difficulty[] = ['easy', 'normal', 'extreme'];
+  const difficulties: Difficulty[] = ['easy', 'normal', 'extreme', 'femboy'];
 
   const winRate = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
   const avgTime = stats.gamesPlayed > 0 ? Math.round(stats.totalTime / stats.gamesPlayed) : 0;

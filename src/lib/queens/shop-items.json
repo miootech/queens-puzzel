@@ -191,6 +191,60 @@
       "description": "Intense stellar fire and plasma",
       "rarity": "legendary",
       "colors": ["#3F00FF", "#7F00FF", "#BF00FF", "#FF00FF", "#FF00BF", "#FF007F", "#FF003F", "#FF0000", "#FF3F00", "#FF7F00", "#FFBF00", "#FFFF00"]
+    },
+    {
+      "id": "theme-femboy-default",
+      "name": "Hellfire",
+      "price": 0,
+      "description": "Femboy only · Default theme · Coal to fire",
+      "rarity": "free",
+      "femboyOnly": true,
+      "colors": ["#1A1A1A", "#2D1B0E", "#4A1E0E", "#7A1F0A", "#A52A2A", "#DC143C", "#FF0000", "#FF4500", "#FF6347", "#FF8C00", "#FFA500", "#FFD700"]
+    },
+    {
+      "id": "theme-femboy-loveydovey",
+      "name": "Lovey Dovey",
+      "price": 5000,
+      "description": "Femboy only · Pink magenta palette",
+      "rarity": "legendary",
+      "femboyOnly": true,
+      "colors": ["#FF1493", "#FF69B4", "#FFB6C1", "#FFC0CB", "#DB7093", "#C71585", "#FF00FF", "#DA70D6", "#EE82EE", "#DDA0DD", "#BA55D3", "#9370DB", "#FF1493", "#FF69B4", "#FFC0CB"]
+    },
+    {
+      "id": "theme-femboy-nightsky",
+      "name": "Night Sky",
+      "price": 5000,
+      "description": "Femboy only · Cosmic midnight nebula",
+      "rarity": "legendary",
+      "femboyOnly": true,
+      "colors": ["#0B0B1F", "#1E1E5A", "#2D2D7F", "#4169E1", "#1E90FF", "#00BFFF", "#87CEEB", "#4682B4", "#5F9EA0", "#7B68EE", "#6A5ACD", "#483D8B", "#1E1E5A", "#4169E1", "#87CEEB"]
+    },
+    {
+      "id": "theme-femboy-nebulasky",
+      "name": "Nebula Sky",
+      "price": 5000,
+      "description": "Femboy only · Dark purple with stars",
+      "rarity": "legendary",
+      "femboyOnly": true,
+      "colors": ["#0D0033", "#1A004D", "#2E0B6B", "#4B138C", "#6B1BAA", "#8B2BC8", "#A93BDC", "#C44EE8", "#D860F0", "#9370DB", "#7B68EE", "#BA55D3", "#2E0B6B", "#8B2BC8", "#A93BDC"]
+    },
+    {
+      "id": "theme-femboy-royal",
+      "name": "Royal",
+      "price": 5000,
+      "description": "Femboy only · Royal red and blue",
+      "rarity": "legendary",
+      "femboyOnly": true,
+      "colors": ["#8B0000", "#B22222", "#DC143C", "#FF0000", "#FF6347", "#FFD700", "#000080", "#0000FF", "#1E90FF", "#4169E1", "#4682B4", "#87CEFA", "#DC143C", "#FFD700", "#0000FF"]
+    },
+    {
+      "id": "theme-femboy-fairynature",
+      "name": "Fairy Nature",
+      "price": 5000,
+      "description": "Femboy only · Enchanted forest with petals",
+      "rarity": "legendary",
+      "femboyOnly": true,
+      "colors": ["#2D4A2B", "#3F6B3D", "#528C4D", "#7BC97A", "#95DE94", "#B0E8AF", "#C9F0C9", "#FFB3D9", "#FF8FC4", "#FF66B3", "#FF4DA3", "#C71585", "#3F6B3D", "#FFB3D9", "#528C4D"]
     }
   ],
   "queens": [
@@ -230,13 +284,13 @@
       "image": "/queens/gedagedigeda.png"
     },
     {
-      "id": "queen-tripple_t",
-      "name": "Tung Tung Tung Sahur",
+      "id": "queen-sigma-god",
+      "name": "Sigma Emperor",
       "price": 5000,
-      "description": "The ultimate legendary sigma brainrot",
+      "description": "The ultimate legendary sigma crown",
       "rarity": "legendary",
       "icon": "crown",
-      "image": "/queens/tripple_t.png"
+      "image": "/queens/sigma_god.png"
     }
   ]
 }
