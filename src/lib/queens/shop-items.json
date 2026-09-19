@@ -284,13 +284,58 @@
       "image": "/queens/gedagedigeda.png"
     },
     {
-      "id": "queen-tripple_t",
-      "name": "Tung Tung Tung Sahur",
+      "id": "queen-trippl_t",
+      "name": "Tung Tng Tung Sahur",
       "price": 5000,
       "description": "The ultimate legendary sigma brainrot",
       "rarity": "legendary",
       "icon": "crown",
       "image": "/queens/tripple_t.png"
+    },
+    {
+      "id": "queen-spongebob",
+      "name": "SpongeBob",
+      "price": 0,
+      "description": "Bikini Bottom bundle · I'm ready!",
+      "rarity": "legendary",
+      "icon": "crown",
+      "image": "/bundles/spongebob/spongebob.png",
+      "bundleOnly": true
+    },
+    {
+      "id": "queen-patrick",
+      "name": "Patrick Star",
+      "price": 0,
+      "description": "Bikini Bottom bundle · Is mayonnaise an instrument?",
+      "rarity": "legendary",
+      "icon": "crown",
+      "image": "/bundles/spongebob/patrick.png",
+      "bundleOnly": true
+    },
+    {
+      "id": "queen-plankton",
+      "name": "Plankton",
+      "price": 0,
+      "description": "Bikini Bottom bundle · I went to college!",
+      "rarity": "legendary",
+      "icon": "crown",
+      "image": "/bundles/spongebob/plankton.png",
+      "bundleOnly": true
+    }
+  ],
+  "bundles": [
+    {
+      "id": "bundle-spongebob",
+      "name": "Bikini Bottom Bundle",
+      "price": 30000,
+      "description": "SpongeBob Theme · BG + Grid Colors + 3 Skins",
+      "rarity": "legendary",
+      "background": "/bundles/spongebob/bg.svg",
+      "gridColors": ["#F7E96B", "#A8D8C5", "#7FBED9", "#5EAFD9", "#84D4F0", "#A5D8E8", "#F5C26B", "#E8A87C", "#C38D9E", "#85D6C2", "#D4B0E2", "#7DC8E8"],
+      "queenSkins": ["queen-spongebob", "queen-patrick", "queen-plankton"],
+      "currencyName": "Crab Dollar",
+      "currencyIcon": "/bundles/spongebob/currency.png",
+      "logo": "/bundles/spongebob/logo.png"
     }
   ]
 }

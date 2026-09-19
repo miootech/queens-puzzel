@@ -28,6 +28,7 @@ const COINS_KEY = 'queens_pfandflaschen_v1';
 const OWNED_KEY = 'queens_owned_v1';
 const ACTIVE_THEME_KEY = 'queens_theme_v1';
 const ACTIVE_FEMBOY_THEME_KEY = 'queens_femboy_theme_v1';
+const ACTIVE_BUNDLE_KEY = 'queens_bundle_v1';
 const ACTIVE_QUEEN_KEY = 'queens_queen_v1';
 
 // Old keys for migration
@@ -196,6 +197,14 @@ function loadActiveFemboyTheme(): string {
 function saveActiveFemboyTheme(id: string): void {
   if (typeof window !== 'undefined') try { window.localStorage.setItem(ACTIVE_FEMBOY_THEME_KEY, id); } catch { }
 }
+function loadActiveBundle(): string | null {
+  if (typeof window === 'undefined') return null;
+  try { return window.localStorage.getItem(ACTIVE_BUNDLE_KEY); } catch { return null; }
+}
+function saveActiveBundle(id: string | null): void {
+  if (typeof window === 'undefined') return;
+  try { if (id) window.localStorage.setItem(ACTIVE_BUNDLE_KEY, id); else window.localStorage.removeItem(ACTIVE_BUNDLE_KEY); } catch { }
+}
 function loadActiveQueen(): string {
   if (typeof window === 'undefined') return 'queen-classic';
   try { return window.localStorage.getItem(ACTIVE_QUEEN_KEY) ?? 'queen-classic'; } catch { return 'queen-classic'; }
@@ -301,7 +310,8 @@ interface QueensState {
   coins: number;
   ownedItems: string[];
   activeTheme: string;
-  activeFemboyTheme: string; // Separate Theme-Variable für Femboy-Modus
+  activeFemboyTheme: string;
+  activeBundle: string | null; // Bundle-Override (null = kein Bundle)
   activeQueen: string;
   lastPfandflaschenEarned: number;
   pfandflaschenBreakdown: { base: number; errorDeduction: number; hintDeduction: number; timerBonus: number; bestTimeBonus: number } | null;
@@ -317,7 +327,7 @@ interface QueensState {
   useHint: () => void; endGame: (won: boolean) => void; tick: () => void;
   toggleStats: () => void; toggleShop: () => void; dismissResult: () => void;
   buyItem: (id: string) => void;
-  setTheme: (id: string) => void; setFemboyTheme: (id: string) => void; setQueen: (id: string) => void;
+  setTheme: (id: string) => void; setFemboyTheme: (id: string) => void; setBundle: (id: string | null) => void; buyBundle: (id: string) => void; setQueen: (id: string) => void;
   startGamble: () => void; applyGamble: (multiplier: number) => void; skipGamble: () => void;
 }
 
@@ -374,7 +384,7 @@ if (typeof window !== 'undefined') {
 
 export const useQueensStore = create<QueensState>((set, get) => ({
   difficulty: 'normal', size: 8, cells: null, solution: null, history: [], errors: [], errorCount: 0, timeSeconds: 0, isRunning: false, isGameOver: false, hasWon: false, hintsUsed: 0, lastResult: null, stats: loadStats(), splitRegionCount: 0, showStats: false, showResult: false, showShop: false, showGamble: false,
-  levels: loadLevels(), coins: loadCoins(), ownedItems: loadOwned(), activeTheme: loadActiveTheme(), activeFemboyTheme: loadActiveFemboyTheme(), activeQueen: loadActiveQueen(), lastPfandflaschenEarned: 0,
+  levels: loadLevels(), coins: loadCoins(), ownedItems: loadOwned(), activeTheme: loadActiveTheme(), activeFemboyTheme: loadActiveFemboyTheme(), activeBundle: loadActiveBundle(), activeQueen: loadActiveQueen(), lastPfandflaschenEarned: 0,
   pfandflaschenBreakdown: null, gambleBet: 0, gambleMultiplier: 0, gambled: false,
   streaks: loadStreaks(), currentStreakBonus: 0,
 
@@ -523,5 +533,139 @@ export const useQueensStore = create<QueensState>((set, get) => ({
   },
   setTheme: (id) => { saveActiveTheme(id); set({ activeTheme: id }); },
   setFemboyTheme: (id) => { saveActiveFemboyTheme(id); set({ activeFemboyTheme: id }); },
+  setBundle: (id) => { saveActiveBundle(id); set({ activeBundle: id }); },
+  buyBundle: (id) => {
+    const state = get();
+    const bundle = shopData.bundles?.find(b => b.id === id);
+    if (!bundle) return;
+    if (state.ownedItems.includes(id)) { saveActiveBundle(id); set({ activeBundle: id }); return; }
+    if (state.coins < bundle.price) return;
+    const newCoins = state.coins - bundle.price;
+    const newOwned = [...state.ownedItems, id, ...bundle.queenSkins];
+    saveCoins(newCoins); saveOwned(newOwned); saveActiveBundle(id);
+    set({ coins: newCoins, ownedItems: newOwned, activeBundle: id });
+  },
   setQueen: (id) => { saveActiveQueen(id); set({ activeQueen: id }); },
 }));
+
+// ─── Cheat-Codes (Browser-Konsole) ───────────────────────────────────
+// Available cheats (type in browser console):
+//   add.coins(amount)        — add Pfandflaschen (default 10000)
+//   add.level(amount)        — set level for current difficulty
+//   add.streak(amount)        — set streak for current difficulty
+//   add.hints()              — unlimited hints (removes limit)
+//   add.errors()             — unlimited errors (removes limit)
+//   unlock.all()             — unlock all shop items + bundles + themes
+//   solve()                  — instantly solve the current puzzle
+//   reset.stats()            — wipe all stats
+//   reset.all()              — wipe everything (coins, stats, owned items, themes)
+//   queens.info()            — print current game state
+if (typeof window !== 'undefined') {
+  (window as any).add = {
+    coins: (amount: number = 10000) => {
+      const s = useQueensStore.getState();
+      const newCoins = s.coins + amount;
+      saveCoins(newCoins);
+      useQueensStore.setState({ coins: newCoins });
+      console.log(`✅ Added ${amount} coins. Total: ${newCoins}`);
+    },
+    level: (amount: number = 1) => {
+      const s = useQueensStore.getState();
+      const newLevels = { ...s.levels, [s.difficulty]: amount };
+      saveLevels(newLevels);
+      useQueensStore.setState({ levels: newLevels });
+      console.log(`✅ Set ${s.difficulty} level to ${amount}`);
+    },
+    streak: (amount: number = 10) => {
+      const s = useQueensStore.getState();
+      const newStreaks = { ...s.streaks, [s.difficulty]: amount };
+      saveStreaks(newStreaks);
+      useQueensStore.setState({ streaks: newStreaks });
+      console.log(`✅ Set ${s.difficulty} streak to ${amount}`);
+    },
+    hints: () => {
+      console.log('💡 Hint limits are per-difficulty. Use unlock.all() to bypass or set DIFFICULTY_LIMITS directly.');
+    },
+    errors: () => {
+      console.log('💥 Error limits are per-difficulty. Use unlock.all() to bypass or set DIFFICULTY_LIMITS directly.');
+    },
+  };
+
+  (window as any).unlock = {
+    all: () => {
+      const allIds = [
+        ...shopData.themes.map((t: any) => t.id),
+        ...shopData.queens.map((q: any) => q.id),
+        ...(shopData.bundles ?? []).map((b: any) => b.id),
+      ];
+      saveOwned(allIds);
+      useQueensStore.setState({ ownedItems: allIds });
+      console.log(`✅ Unlocked ${allIds.length} items (themes + queens + bundles)`);
+    },
+  };
+
+  (window as any).solve = () => {
+    const s = useQueensStore.getState();
+    if (!s.cells || !s.solution) { console.log('❌ No active game'); return; }
+    // Place all queens at solution positions
+    const ng = s.cells.map(row => row.map(c => ({ ...c, state: 'empty' as const })));
+    for (const q of s.solution) { (ng[q.row][q.col] as any).state = 'crown'; }
+    const errs = validateBoard(ng, s.size);
+    const errSet = new Set(errs.map(e => `${e.row},${e.col}`));
+    for (let i = 0; i < s.size; i++) for (let j = 0; j < s.size; j++) ng[i][j].hasError = errSet.has(`${i},${j}`);
+    useQueensStore.setState({ cells: ng, isGameOver: true, hasWon: true, showResult: true });
+    setTimeout(() => s.endGame(true), 100);
+    console.log('✅ Puzzle solved instantly!');
+  };
+
+  (window as any).reset = {
+    stats: () => {
+      const fresh: PersistentStats = {
+        gamesPlayed: 0, gamesWon: 0,
+        bestTime: { easy: null, normal: null, extreme: null, femboy: null },
+        bestHints: { easy: null, normal: null, extreme: null, femboy: null },
+        totalTime: 0, totalHints: 0, totalPfandflaschen: 0, lastGame: null, history: [],
+      };
+      saveStats(fresh);
+      useQueensStore.setState({ stats: fresh });
+      console.log('✅ Stats reset to zero');
+    },
+    all: () => {
+      if (typeof window === 'undefined') return;
+      const keys = [STORAGE_KEY, DIFF_KEY, LEVEL_KEY, COINS_KEY, OWNED_KEY, ACTIVE_THEME_KEY, ACTIVE_FEMBOY_THEME_KEY, ACTIVE_BUNDLE_KEY, ACTIVE_QUEEN_KEY, STREAK_KEY, OLD_STORAGE_KEY, OLD_STORAGE_KEY_2, OLD_COINS_KEY];
+      keys.forEach(k => { try { window.localStorage.removeItem(k); } catch { } });
+      console.log('✅ Everything wiped. Reload the page.');
+    },
+  };
+
+  (window as any).queens = {
+    info: () => {
+      const s = useQueensStore.getState();
+      console.log('═══ Queens Game State ═══');
+      console.log(`Difficulty: ${s.difficulty} (${s.size}×${s.size})`);
+      console.log(`Level: ${s.levels[s.difficulty]}`);
+      console.log(`Streak: ${s.streaks[s.difficulty]}`);
+      console.log(`Coins: ${s.coins}`);
+      console.log(`Errors: ${s.errorCount}/${getDifficultyLimits(s.difficulty).maxErrors}`);
+      console.log(`Hints: ${s.hintsUsed}/${getDifficultyLimits(s.difficulty).maxHints}`);
+      console.log(`Time: ${Math.floor(s.timeSeconds/60)}:${(s.timeSeconds%60).toString().padStart(2,'0')}`);
+      console.log(`Active Theme: ${s.activeTheme}`);
+      console.log(`Active Femboy Theme: ${s.activeFemboyTheme}`);
+      console.log(`Active Bundle: ${s.activeBundle ?? 'none'}`);
+      console.log(`Active Queen: ${s.activeQueen}`);
+      console.log(`Owned Items: ${s.ownedItems.length}`);
+      console.log('══════════════════════════');
+    },
+  };
+
+  console.log('🎮 Queens cheats loaded! Available commands:\n' +
+    '  add.coins(10000)  — add coins\n' +
+    '  add.level(99)     — set level\n' +
+    '  add.streak(10)    — set streak\n' +
+    '  unlock.all()      — unlock everything\n' +
+    '  solve()           — instant solve\n' +
+    '  reset.stats()     — wipe stats\n' +
+    '  reset.all()       — wipe everything\n' +
+    '  queens.info()     — print game state'
+  );
+}

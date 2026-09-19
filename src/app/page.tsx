@@ -14,6 +14,7 @@ import { ShopModal } from '@/components/queens/ShopModal';
 import { GambleModal } from '@/components/queens/GambleModal';
 import { StatsModal } from '@/components/queens/StatsModal';
 import { cn } from '@/lib/utils';
+import shopData from '@/lib/queens/shop-items.json';
 
 function formatTime(s: number) { return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
 
@@ -64,15 +65,41 @@ export default function QueensPage() {
   const currentLevel = levels[difficulty] ?? 1;
   const currentStreak = useQueensStore(s => s.streaks[difficulty] ?? 0);
 
+  const activeBundle = useQueensStore(s => s.activeBundle);
+
   const handleNext = () => { dismissResult(); startNewGame(); };
 
+  // Bundle BG Override + Custom Currency + Logo Easter Egg
+  const bundleData = activeBundle ? (shopData as any).bundles?.find((b: any) => b.id === activeBundle) : null;
+  const bundleBgStyle: React.CSSProperties = bundleData?.background ? {
+    backgroundImage: `url(${bundleData.background})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed',
+    backgroundColor: '#000',
+  } : {};
+
+  // Custom Currency: wenn Bundle aktiv, zeige dessen Currency Name + Icon
+  const currencyName = bundleData?.currencyName ?? 'Pfandflaschen';
+  const currencyIcon = bundleData?.currencyIcon;
+  const bundleLogo = bundleData?.logo;
+
   return (
-    <div className={cn('bg-mesh relative flex min-h-screen w-full flex-col items-center px-4 py-5', difficulty === 'femboy' && 'femboy-bg')}>
+    <div
+      className={cn('relative flex min-h-screen w-full flex-col items-center px-4 py-5', !bundleData && 'bg-mesh', !bundleData && difficulty === 'femboy' && 'femboy-bg')}
+      style={bundleData ? bundleBgStyle : undefined}
+    >
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex w-full max-w-md items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-white/10', difficulty === 'femboy' ? 'bg-gradient-to-br from-pink-500/40 to-rose-500/40' : 'bg-gradient-to-br from-amber-500/30 to-rose-500/30')}>
-            <Crown className={cn('h-4 w-4', difficulty === 'femboy' ? 'fill-pink-200 text-pink-200' : 'fill-amber-300 text-amber-300')} />
+          {/* Logo: Bundle Easter Egg oder default Crown */}
+          <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-white/10 overflow-hidden', !bundleLogo && (difficulty === 'femboy' ? 'bg-gradient-to-br from-pink-500/40 to-rose-500/40' : 'bg-gradient-to-br from-amber-500/30 to-rose-500/30'))}>
+            {bundleLogo ? (
+              <img src={bundleLogo} alt="Logo" className="h-full w-full object-cover" />
+            ) : (
+              <Crown className={cn('h-4 w-4', difficulty === 'femboy' ? 'fill-pink-200 text-pink-200' : 'fill-amber-300 text-amber-300')} />
+            )}
           </div>
           <div className="flex flex-col">
             <span className="text-[9px] font-medium uppercase tracking-[0.22em] text-neutral-500">Logic Puzzle</span>
@@ -80,9 +107,14 @@ export default function QueensPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className={cn('flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1', difficulty === 'femboy' ? 'bg-pink-500/[0.08] ring-pink-500/20' : 'bg-amber-500/[0.08] ring-amber-500/20')}>
-            <BottleIcon className={cn('h-3.5 w-3.5', difficulty === 'femboy' ? 'text-pink-300' : 'text-amber-400')} />
-            <span className={cn('font-mono text-[13px] font-bold tabular-nums', difficulty === 'femboy' ? 'text-pink-200' : 'text-amber-300')}>{mounted ? coins : 0}</span>
+          {/* Currency Badge: Bundle Currency oder default Pfandflaschen */}
+          <div className={cn('flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1', difficulty === 'femboy' && !bundleData ? 'bg-pink-500/[0.08] ring-pink-500/20' : bundleData ? 'bg-amber-500/[0.08] ring-amber-500/20' : 'bg-amber-500/[0.08] ring-amber-500/20')}>
+            {currencyIcon ? (
+              <img src={currencyIcon} alt={currencyName} className="h-4 w-4 object-contain" />
+            ) : (
+              <BottleIcon className={cn('h-3.5 w-3.5', difficulty === 'femboy' ? 'text-pink-300' : 'text-amber-400')} />
+            )}
+            <span className={cn('font-mono text-[13px] font-bold tabular-nums', difficulty === 'femboy' && !bundleData ? 'text-pink-200' : 'text-amber-300')}>{mounted ? coins : 0}</span>
           </div>
           <motion.button onClick={toggleShop} whileTap={{ scale: 0.92 }} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.04] text-neutral-400 ring-1 ring-white/[0.06] hover:bg-white/[0.08] hover:text-white" aria-label="Shop"><ShoppingBag className="h-[16px] w-[16px]" /></motion.button>
           <motion.button onClick={toggleStats} whileTap={{ scale: 0.92 }} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.04] text-neutral-400 ring-1 ring-white/[0.06] hover:bg-white/[0.08] hover:text-white" aria-label="Stats"><BarChart3 className="h-[16px] w-[16px]" /></motion.button>

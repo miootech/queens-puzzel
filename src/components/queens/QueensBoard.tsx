@@ -77,15 +77,21 @@ export function QueensBoard() {
   const activeQueen = useQueensStore(s => s.activeQueen);
   const difficulty = useQueensStore(s => s.difficulty);
 
+  // Bundle-Override: falls ein Bundle aktiv ist, verwende dessen Grid-Farben
+  const activeBundle = useQueensStore(s => s.activeBundle);
+  const bundleData = activeBundle ? shopData.bundles?.find((b: any) => b.id === activeBundle) : null;
+  const bundleColors = bundleData?.gridColors as string[] | undefined;
+
   // Femboy-Modus: verwende das aktive Femboy-Theme aus dem Shop (theme-femboy-default ist Hellfire)
   // Andere Modi: Theme-Farben falls aktiv, sonst REGION_COLORS (Pastell)
+  // Bundle hat höchste Priorität (überschreibt alles)
   const isFemboy = difficulty === 'femboy';
   const femboyThemeData = isFemboy
     ? shopData.themes.find(t => t.id === activeFemboyTheme)
     : null;
-  const activeColors = isFemboy
+  const activeColors = bundleColors ?? (isFemboy
     ? (femboyThemeData?.colors ?? REGION_COLORS_FEMBOY)
-    : (SHOP_ITEMS.find(i => i.id === activeTheme)?.colors ?? REGION_COLORS);
+    : (SHOP_ITEMS.find(i => i.id === activeTheme)?.colors ?? REGION_COLORS));
 
   const [hoveredCell, setHoveredCell] = useState<{ r: number; c: number } | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
