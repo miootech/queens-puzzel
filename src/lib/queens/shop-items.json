@@ -9,9 +9,49 @@
       "colors": ["#E8A598","#E8C887","#E8D88A","#A8D4A0","#9CCFC4","#9CBFD9","#B8A5C9","#D9A5A0","#B5B5B5","#D4B896","#A5B8D4","#C4A5B8"]
     },
     {
+      "id": "theme-latte",
+      "name": "Coffee Latte",
+      "price": 500,
+      "description": "Warm coffee and cream shades",
+      "rarity": "common",
+      "colors": ["#3E2723", "#4E342E", "#5D4037", "#6D4C41", "#795548", "#8D6E63", "#A1887F", "#BCAAA4", "#D7CCC8", "#EFEBE9", "#D7CCC8", "#BCAAA4"]
+    },
+    {
+      "id": "theme-mint",
+      "name": "Mint Chocolate",
+      "price": 500,
+      "description": "Refreshing mint and rich cocoa",
+      "rarity": "common",
+      "colors": ["#A8E6CF", "#DCEDC1", "#FFF3B0", "#FF6B6B", "#FF8B94", "#3D3A45", "#2C2C34", "#A8E6CF", "#DCEDC1", "#FFF3B0", "#FF6B6B", "#FF8B94"]
+    },
+    {
+      "id": "theme-berry",
+      "name": "Berry Smoothie",
+      "price": 500,
+      "description": "Juicy mixed berry colors",
+      "rarity": "common",
+      "colors": ["#880E4F", "#AD1457", "#C2185B", "#D81B60", "#E91E63", "#F06292", "#F8BBD0", "#880E4F", "#AD1457", "#C2185B", "#D81B60", "#E91E63"]
+    },
+    {
+      "id": "theme-pearl",
+      "name": "Pearl Glow",
+      "price": 500,
+      "description": "Soft pearl and cream elegance",
+      "rarity": "common",
+      "colors": ["#FAF0E6", "#F5E6D3", "#EAD9C5", "#D4B896", "#C9A961", "#BFA37A", "#E8D5B7", "#F0E0C2", "#FAF0E6", "#F5E6D3", "#EAD9C5", "#D4B896"]
+    },
+    {
+      "id": "theme-mojito",
+      "name": "Mojito Breeze",
+      "price": 500,
+      "description": "Fresh lime and mint splash",
+      "rarity": "common",
+      "colors": ["#DCEDC1", "#A8E6CF", "#6BCB77", "#4D9647", "#2D5E27", "#7FB069", "#B5D99C", "#9BC97E", "#DCEDC1", "#A8E6CF", "#6BCB77", "#4D9647"]
+    },
+    {
       "id": "theme-ocean",
       "name": "Ocean",
-      "price": 100,
+      "price": 1000,
       "description": "Cool blue tones",
       "rarity": "rare",
       "colors": ["#A8D8EA","#B0E0E6","#AFEEEE","#87CEEB","#87CEFA","#B0C4DE","#ADD8E6","#B0E0E6","#87CEEB","#87CEFA","#B0C4DE","#AFEEEE"]
@@ -19,15 +59,63 @@
     {
       "id": "theme-sunset",
       "name": "Sunset",
-      "price": 150,
+      "price": 1000,
       "description": "Warm orange and red tones",
       "rarity": "rare",
       "colors": ["#FFB6A3","#FFCBA4","#FFD8A8","#FFA07A","#FA8072","#E9967A","#F4A460","#FFA07A","#FA8072","#E9967A","#F4A460","#FFB6A3"]
     },
     {
+      "id": "theme-retro",
+      "name": "Retro 80s",
+      "price": 1000,
+      "description": "Nostalgic 80s aesthetic",
+      "rarity": "rare",
+      "colors": ["#2B2D42", "#8D99AE", "#EDF2F4", "#EF233C", "#D90429", "#2B2D42", "#8D99AE", "#EDF2F4", "#EF233C", "#D90429", "#2B2D42", "#8D99AE"]
+    },
+    {
+      "id": "theme-lavender",
+      "name": "Lavender Dream",
+      "price": 1000,
+      "description": "Soft purple fields and flowers",
+      "rarity": "rare",
+      "colors": ["#E6E6FA", "#D8BFD8", "#DDA0DD", "#BA55D3", "#9932CC", "#8A2B82", "#9370DB", "#8B008B", "#483D8B", "#6A5ACD", "#7B68EE", "#8470FF"]
+    },
+    {
+      "id": "theme-autumn",
+      "name": "Autumn Spice",
+      "price": 1000,
+      "description": "Crisp autumn leaves and warmth",
+      "rarity": "rare",
+      "colors": ["#D35400", "#E67E22", "#F39C12", "#F1C40F", "#C0392B", "#A93226", "#78281F", "#D35400", "#E67E22", "#F39C12", "#F1C40F", "#C0392B"]
+    },
+    {
+      "id": "theme-golden-hour",
+      "name": "Golden Hour",
+      "price": 1000,
+      "description": "Sun-drenched evening glow",
+      "rarity": "rare",
+      "colors": ["#F6D55C", "#F3A712", "#E95C20", "#C33127", "#9E1946", "#F6D55C", "#F3A712", "#E95C20", "#C33127", "#9E1946", "#F6D55C", "#F3A712"]
+    },
+    {
+      "id": "theme-midnight",
+      "name": "Midnight Blue",
+      "price": 1000,
+      "description": "Dark night sky and moonlit clouds",
+      "rarity": "rare",
+      "colors": ["#0A192F", "#172A45", "#303C55", "#486581", "#627D98", "#829AB1", "#9FB3C8", "#BCCCDC", "#0A192F", "#172A45", "#303C55", "#486581"]
+    },
+    {
+      "id": "theme-coral",
+      "name": "Coral Reef",
+      "price": 1000,
+      "description": "Vibrant coral and turquoise sea life",
+      "rarity": "rare",
+      "colors": ["#FF6B6B", "#FF8B94", "#FFAAA5", "#4ECDC4", "#1A535C", "#FFE66D", "#FF6B6B", "#4ECDC4", "#FF8B94", "#FFE66D", "#1A535C", "#FFAAA5"]
+    },
+    {
       "id": "theme-forest",
       "name": "Forest",
-      "price": 200,
+      "price": 2000,
       "description": "Green nature tones",
       "rarity": "epic",
       "colors": ["#C5E1A5","#AED581","#DCEDC8","#C5E1A5","#A5D6A7","#81C784","#66BB6A","#4CAF50","#81C784","#A5D6A7","#C5E1A5","#DCEDC8"]
@@ -35,18 +123,74 @@
     {
       "id": "theme-candy",
       "name": "Candy",
-      "price": 250,
+      "price": 2000,
       "description": "Sweet candy colors",
       "rarity": "epic",
       "colors": ["#F8BBD0","#F48FB1","#FFCDD2","#FFAB91","#FFCC80","#FFF59D","#D7CCC8","#CE93D8","#B39DDB","#9FA8DA","#90CAF9","#81D4FA"]
     },
     {
+      "id": "theme-cyberpunk",
+      "name": "Cyberpunk",
+      "price": 2000,
+      "description": "Futuristic neon city vibes",
+      "rarity": "epic",
+      "colors": ["#FF0055", "#00F0FF", "#7B00FF", "#FFE600", "#FF0055", "#00F0FF", "#7B00FF", "#FFE600", "#FF0055", "#00F0FF", "#7B00FF", "#FFE600"]
+    },
+    {
+      "id": "theme-vaporwave",
+      "name": "Vaporwave",
+      "price": 2000,
+      "description": "Glitchy 90s internet nostalgia",
+      "rarity": "epic",
+      "colors": ["#FF71CE", "#01CDFE", "#05FFA1", "#B967FF", "#FFFB96", "#FF71CE", "#01CDFE", "#05FFA1", "#B967FF", "#FFFB96", "#FF71CE", "#01CDFE"]
+    },
+    {
+      "id": "theme-sakura",
+      "name": "Sakura Blossom",
+      "price": 2000,
+      "description": "Japanese cherry blossom spring",
+      "rarity": "epic",
+      "colors": ["#FFD1DC", "#FFB7C5", "#FFA6C1", "#FF94B8", "#FF82AF", "#FF70A6", "#FF5C9D", "#FF4794", "#FFD1DC", "#FFB7C5", "#FFA6C1", "#FF94B8"]
+    },
+    {
+      "id": "theme-tropical",
+      "name": "Tropical Paradise",
+      "price": 2000,
+      "description": "Vibrant turquoise and coral paradise",
+      "rarity": "epic",
+      "colors": ["#06D6A0", "#1B9AAA", "#EF476F", "#FFC43D", "#073B4C", "#118AB2", "#06D6A0", "#1B9AAA", "#EF476F", "#FFC43D", "#073B4C", "#118AB2"]
+    },
+    {
       "id": "theme-mono",
       "name": "Monochrome",
-      "price": 300,
+      "price": 3000,
       "description": "Elegant gray tones",
       "rarity": "legendary",
       "colors": ["#CFD8DC","#B0BEC5","#90A4AE","#78909C","#607D8B","#546E7A","#455A64","#37474F","#CFD8DC","#B0BEC5","#90A4AE","#78909C"]
+    },
+    {
+      "id": "theme-galaxy",
+      "name": "Cosmic Galaxy",
+      "price": 3000,
+      "description": "Deep space and starlight",
+      "rarity": "legendary",
+      "colors": ["#0B032D", "#1C0B4F", "#32146A", "#532185", "#7C2EA0", "#A93BB7", "#D450C9", "#F76EDC", "#0B032D", "#1C0B4F", "#32146A", "#532185"]
+    },
+    {
+      "id": "theme-emerald",
+      "name": "Emerald City",
+      "price": 3000,
+      "description": "Luxurious deep green and gold",
+      "rarity": "legendary",
+      "colors": ["#023535", "#014D4E", "#026670", "#9FEDD7", "#FEF9C7", "#023535", "#014D4E", "#026670", "#9FEDD7", "#FEF9C7", "#023535", "#014D4E"]
+    },
+    {
+      "id": "theme-solar",
+      "name": "Solar Flare",
+      "price": 3000,
+      "description": "Intense stellar fire and plasma",
+      "rarity": "legendary",
+      "colors": ["#3F00FF", "#7F00FF", "#BF00FF", "#FF00FF", "#FF00BF", "#FF007F", "#FF003F", "#FF0000", "#FF3F00", "#FF7F00", "#FFBF00", "#FFFF00"]
     }
   ],
   "queens": [
@@ -84,6 +228,15 @@
       "rarity": "epic",
       "icon": "crown",
       "image": "/queens/gedagedigeda.png"
+    },
+    {
+      "id": "queen-tripple_t",
+      "name": "Tung Tung Tung Sahur",
+      "price": 5000,
+      "description": "The ultimate legendary sigma brainrot",
+      "rarity": "legendary",
+      "icon": "crown",
+      "image": "/queens/tripple_t.png"
     }
   ]
 }

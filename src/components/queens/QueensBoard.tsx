@@ -16,6 +16,7 @@ const QUEEN_LOOKUP: Record<string, QueenItem> = (shopData.queens as QueenItem[])
 );
 
 // ── Queen Marker (Bild mit Crown-Fallback) ──
+// Bild wird als zentrierter Circle innerhalb der Zelle angezeigt (nicht full-bleed)
 function QueenMarker({ activeQueen }: { activeQueen: string }) {
   const queen = QUEEN_LOOKUP[activeQueen];
   const [imgError, setImgError] = useState(false);
@@ -23,20 +24,28 @@ function QueenMarker({ activeQueen }: { activeQueen: string }) {
   // Reset error state when queen changes
   useEffect(() => { setImgError(false); }, [activeQueen]);
 
+  // Fallback: klassische Krone, ca. 55% der Zelle
   if (!queen?.image || imgError) {
     return (
       <Crown className="h-[55%] w-[55%] fill-neutral-900 text-neutral-900" strokeWidth={1.4} />
     );
   }
 
+  // Bild in zentriertem Kreis: 70% der Zellgröße, rounded-full, object-cover
+  // → Bild ist ein kreisförmiger Stempel in der Zellmitte, nicht full-bleed
   return (
-    <img
-      src={queen.image}
-      alt={activeQueen}
-      className="h-full w-full object-cover"
-      onError={() => setImgError(true)}
-      draggable={false}
-    />
+    <div
+      className="flex h-[70%] w-[70%] items-center justify-center overflow-hidden rounded-full ring-2 ring-black/20"
+      style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.25)' }}
+    >
+      <img
+        src={queen.image}
+        alt={activeQueen}
+        className="h-full w-full object-cover"
+        onError={() => setImgError(true)}
+        draggable={false}
+      />
+    </div>
   );
 }
 

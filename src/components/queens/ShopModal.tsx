@@ -54,13 +54,19 @@ function QueenIcon({ image, name, isActive }: { image?: string; name: string; is
       />
     );
   }
+  // Bild als zentrierter Kreis (konsistent mit Board-Anzeige)
   return (
-    <img
-      src={image}
-      alt={name}
-      className="h-full w-full object-cover"
-      onError={() => setImgError(true)}
-    />
+    <div
+      className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/15"
+      style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.35)' }}
+    >
+      <img
+        src={image}
+        alt={name}
+        className="h-full w-full object-cover"
+        onError={() => setImgError(true)}
+      />
+    </div>
   );
 }
 
